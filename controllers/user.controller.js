@@ -1,9 +1,11 @@
 var db = require('../db');
+var dbs = require('../db1');
 var halper = require('../halpers/halper');
 
 module.exports = {
 	defaultUrl: defaultUrl,
 	allUsers: allUsers,
+	postUsers: postUsers,
 	loginUser: loginUser,
 	encrypt: encrypt
 };
@@ -27,8 +29,22 @@ function loginUser(req, res, next){
 	});
 }
 
+async function postUsers(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		let inputData = req.body;
+		const insert_id = await qb.returning('id').insert('users', inputData);
+		inputData.id = insert_id.insertId;
+		
+		res.status(200).json(halper.api_response(1,'user add successfully',inputData));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	}
+}
+
+
 function allUsers(req, res, next){
-	var sql = "SELECT * FROM `users`";
+	var sql = "SELECT * FROM `users` ORDER BY id DESC";
 	db.query(sql, function(err, rows, fields) {
 		if (err) {
 		  res.status(500).json({ error: 'Something failed!' })

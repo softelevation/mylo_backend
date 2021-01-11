@@ -10,6 +10,7 @@ apiController = require('../controllers/user.controller');
 router.get('/',apiController.defaultUrl);
 router.post('/login',apiController.loginUser);
 router.get('/users',apiController.allUsers);
+router.post('/users',apiController.postUsers);
 router.post('/encrypt',apiController.encrypt);
 
 

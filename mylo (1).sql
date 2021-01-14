@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 12, 2021 at 01:27 PM
+-- Generation Time: Jan 14, 2021 at 10:44 AM
 -- Server version: 10.4.17-MariaDB
 -- PHP Version: 7.3.25
 
@@ -62,7 +62,9 @@ CREATE TABLE `otps` (
 --
 
 INSERT INTO `otps` (`id`, `user_id`, `otp`, `created_at`, `updated_at`) VALUES
-(1, 1, 7022, NULL, NULL);
+(1, 1, 7022, NULL, NULL),
+(2, 3, 6629, NULL, NULL),
+(3, 4, 8625, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -75,11 +77,14 @@ CREATE TABLE `users` (
   `name` varchar(255) DEFAULT NULL,
   `email` varchar(150) DEFAULT NULL,
   `phone_no` varchar(255) NOT NULL,
+  `image` varchar(255) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
   `user_verified_at` timestamp NULL DEFAULT NULL,
   `roll_id` enum('1','2') NOT NULL DEFAULT '1',
   `status` enum('1','2') NOT NULL DEFAULT '1',
   `address` varchar(255) DEFAULT NULL,
+  `latitude` varchar(100) DEFAULT NULL,
+  `longitude` varchar(100) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -88,8 +93,11 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `phone_no`, `password`, `user_verified_at`, `roll_id`, `status`, `address`, `created_at`, `updated_at`) VALUES
-(1, 'aa', 'aa@aa.com', '7730836389', NULL, NULL, '1', '1', 'mohali', NULL, NULL);
+INSERT INTO `users` (`id`, `name`, `email`, `phone_no`, `image`, `password`, `user_verified_at`, `roll_id`, `status`, `address`, `latitude`, `longitude`, `created_at`, `updated_at`) VALUES
+(1, 'admin', 'aa@gmail.com', '7730836389', 'images/1610617376820porsche-logo.png', NULL, NULL, '1', '1', 'oppps', NULL, NULL, NULL, NULL),
+(2, 'aman', 'aman@gmail.com', '9999999', NULL, '123456789', NULL, '2', '1', '3, Narpatkhera, Sector H, Barawankhurd, Lucknow, Uttar Pradesh 226101, India', '40.2842164', '-84.1554987', NULL, NULL),
+(3, NULL, NULL, '7730836384', NULL, NULL, NULL, '1', '1', NULL, NULL, NULL, NULL, NULL),
+(4, NULL, NULL, '7730836321', NULL, NULL, NULL, '1', '1', NULL, NULL, NULL, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -127,13 +135,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `otps`
 --
 ALTER TABLE `otps`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

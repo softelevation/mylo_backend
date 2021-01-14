@@ -1,20 +1,34 @@
 var db = require('../db');
 var dbs = require('../db1');
 var halper = require('../halpers/halper');
+var apiModel = require('../Model/model');
 const jwt = require('jsonwebtoken');
-const accessTokenSecret = 'youraccesstokensecret';
+var multer  = require('multer')
 
+const accessTokenSecret = 'youraccesstokensecret';
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/images/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + file.originalname)
+  }
+});
+
+var upload = multer({ storage: storage }).single('image');
 
 module.exports = {
 	defaultUrl: defaultUrl,
 	allUsers: allUsers,
+	allBrokers: allBrokers,
 	postUsers: postUsers,
 	loginUser: loginUser,
 	encrypt: encrypt,
 	registered: registered,
 	verifyOtp: verifyOtp,
 	profile: profile,
-	profilePost: profilePost
+	profilePost: profilePost,
+	formprofilePost: formprofilePost
 };
 
 async function profile(req, res, next){
@@ -44,6 +58,35 @@ async function profilePost(req, res, next){
 		return res.json(halper.api_response(0,'This is invalid request',err));
 	}
 }
+
+
+async function formprofilePost(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		upload(req, res, function(err) {
+			let inputData = {
+							name: req.body.name,
+							email: req.body.email,
+							address: req.body.address
+						}
+			if (err) {
+				 return res.json("Something went wrong!");
+			 }
+			if(req.file){
+				inputData.image = 'images/'+req.file.filename;
+			}
+			qb.update('users', inputData, {id:user.id});
+			qb.disconnect();
+			res.status(200).json(halper.api_response(1,'Profile update successfully',inputData));
+		});
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',err));
+	}
+}
+
+
+
 
 
 
@@ -81,9 +124,11 @@ async function registered(req, res, next){
 		let inputRequest = req.body;
 		var otp = Math.floor(1000 + Math.random() * 9000);
 		qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', async (err, response) => {
-			// 
+			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
+			
 			if(response.length > 0){
-				qb.update('otps', {otp: otp}, {id:response[0].id});
+				qb.update('otps', {otp: otp}, {user_id:response[0].id});
+				qb.disconnect();
 				inputRequest.otp = otp;
 				inputRequest.roll_id = parseInt(response[0].roll_id);
 				inputRequest.roll_name = halper.get_role_id(inputRequest.roll_id);
@@ -93,6 +138,7 @@ async function registered(req, res, next){
 				const insert_id = await qb.returning('id').insert('users', inputRequest);
 				let user_id = insert_id.insertId;
 				qb.insert('otps', {user_id: user_id,otp:otp});
+				qb.disconnect();
 				inputRequest.otp = otp;
 				inputRequest.roll_id = halper.get_role_id('user');
 				inputRequest.roll_name = halper.get_role_id(1);
@@ -140,20 +186,38 @@ async function postUsers(req, res, next){
 
 
 function allUsers(req, res, next){
-	var sql = "SELECT * FROM `users` ORDER BY id DESC";
+	var sql = "SELECT * FROM `users` WHERE `roll_id` = 1 ORDER BY id DESC";
 	db.query(sql, function(err, rows, fields) {
 		if (err) {
 		  res.status(500).json({ error: 'Something failed!' })
 		}else {
 			// if(rows.length >0){
 				// res.status(200).json(halper.api_response(1,'User detail',rows));
-				res.status(200).json(rows);
+				return res.status(200).json(rows);
+				// res.status(200).json(halper.api_response(1,'user add successfully',inputData));
 			// }else{
 				// res.status(206).json(halper.api_response(0,'Email and password does not match',{}));
 			// }
 		}
 	});
 }
+
+function allBrokers(req, res, next){
+	var sql = "SELECT * FROM `users` WHERE `roll_id` = 2 ORDER BY id DESC";
+	db.query(sql, function(err, rows, fields) {
+		if (err) {
+		  res.status(500).json({ error: 'Something failed!' })
+		}else {
+			// if(rows.length >0){
+				return res.status(200).json(halper.api_response(1,'Broker detail',rows));
+				// return res.status(200).json(rows);
+			// }else{
+				// res.status(206).json(halper.api_response(0,'Email and password does not match',{}));
+			// }
+		}
+	});
+}
+
 
 function defaultUrl(req, res, next){
 	var sql = "SELECT * FROM `admins`";

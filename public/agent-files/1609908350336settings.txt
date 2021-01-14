@@ -1,4 +1,0 @@
-root:  
-path:  
-arch: 64 
-proxy: none

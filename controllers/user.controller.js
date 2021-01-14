@@ -185,37 +185,40 @@ async function postUsers(req, res, next){
 }
 
 
-function allUsers(req, res, next){
-	var sql = "SELECT * FROM `users` WHERE `roll_id` = 1 ORDER BY id DESC";
-	db.query(sql, function(err, rows, fields) {
-		if (err) {
-		  res.status(500).json({ error: 'Something failed!' })
-		}else {
-			// if(rows.length >0){
-				// res.status(200).json(halper.api_response(1,'User detail',rows));
-				return res.status(200).json(rows);
-				// res.status(200).json(halper.api_response(1,'user add successfully',inputData));
-			// }else{
-				// res.status(206).json(halper.api_response(0,'Email and password does not match',{}));
-			// }
-		}
-	});
+async function allUsers(req, res, next){
+	const qb = await dbs.get_connection();
+	
+	qb.select('*').where({roll_id: 1}).get('users', async (err, response) => {
+		qb.disconnect();
+			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
+			
+			return res.status(200).json(halper.api_response(1,'Users list',response));
+		});
 }
 
-function allBrokers(req, res, next){
-	var sql = "SELECT * FROM `users` WHERE `roll_id` = 2 ORDER BY id DESC";
-	db.query(sql, function(err, rows, fields) {
-		if (err) {
-		  res.status(500).json({ error: 'Something failed!' })
-		}else {
+async function allBrokers(req, res, next){
+	const qb = await dbs.get_connection();
+	qb.select('*').where({roll_id: 2}).get('users', async (err, response) => {
+		qb.disconnect();
+			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
+			
+			return res.status(200).json(halper.api_response(1,'Brokers list',response));
+		});
+		
+		
+	// var sql = "SELECT * FROM `users` WHERE `roll_id` = 2 ORDER BY id DESC";
+	// db.query(sql, function(err, rows, fields) {
+		// if (err) {
+		  // res.status(500).json({ error: 'Something failed!' })
+		// }else {
 			// if(rows.length >0){
-				return res.status(200).json(halper.api_response(1,'Broker detail',rows));
+				// return res.status(200).json(halper.api_response(1,'Broker detail',rows));
 				// return res.status(200).json(rows);
 			// }else{
 				// res.status(206).json(halper.api_response(0,'Email and password does not match',{}));
 			// }
-		}
-	});
+		// }
+	// });
 }
 
 

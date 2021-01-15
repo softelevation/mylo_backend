@@ -11,6 +11,7 @@ router.get('/',apiController.defaultUrl);
 router.post('/login',apiController.loginUser);
 router.get('/users',apiController.allUsers);
 router.get('/brokers',apiController.allBrokers);
+router.get('/dashboard',apiController.dashboard);
 router.post('/users',apiController.postUsers);
 router.post('/encrypt',apiController.encrypt);
 

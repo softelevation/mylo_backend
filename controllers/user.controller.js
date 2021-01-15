@@ -27,9 +27,23 @@ module.exports = {
 	registered: registered,
 	verifyOtp: verifyOtp,
 	profile: profile,
+	dashboard: dashboard,
 	profilePost: profilePost,
 	formprofilePost: formprofilePost
 };
+
+async function dashboard(req, res, next){
+	try {
+		const qb = await dbs.get_connection();
+		let users = await qb.select('id').where('roll_id', 1).get('users');
+		let brokes = await qb.select('id').where('roll_id', 2).get('users');
+		qb.disconnect();
+		return res.json(halper.api_response(1,'Dashboard',{customers:users.length,brokes:brokes.length}));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	}
+}
+
 
 async function profile(req, res, next){
 	try {

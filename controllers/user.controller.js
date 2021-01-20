@@ -29,8 +29,49 @@ module.exports = {
 	profile: profile,
 	dashboard: dashboard,
 	profilePost: profilePost,
-	formprofilePost: formprofilePost
+	formprofilePost: formprofilePost,
+	deleteData: deleteData,
+	brokerProfile: brokerProfile,
+	postUsersUpdate: postUsersUpdate
 };
+
+async function brokerProfile(req, res, next){
+	try {
+		let input = req.body;
+		const qb = await dbs.get_connection();
+		let users = await qb.select('*').where('id',input.id).limit(1).get('users');
+		qb.disconnect();
+		return res.json(halper.api_response(1,'broker profile',users[0]));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	}
+}
+
+async function postUsersUpdate(req, res, next){
+	try {
+		let input = req.body;
+		let id = req.params.id;
+		const qb = await dbs.get_connection();
+		qb.update('users', input, {id:id});
+		qb.disconnect();
+		return res.json(halper.api_response(1,'Profile update successfully',input));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	}
+}
+
+async function deleteData(req, res, next){
+	try {
+		let input = req.body;
+		const qb = await dbs.get_connection();
+		const results = await qb.delete('users', {id: input.id});
+		qb.disconnect();
+		return res.json(halper.api_response(1,input.action+' delete successfully',input));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	}
+}
+
 
 async function dashboard(req, res, next){
 	try {

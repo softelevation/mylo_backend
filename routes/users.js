@@ -13,6 +13,7 @@ router.get('/users',apiController.allUsers);
 router.get('/brokers',apiController.allBrokers);
 router.get('/dashboard',apiController.dashboard);
 router.post('/users',apiController.postUsers);
+router.post('/users/:id',apiController.postUsersUpdate);
 router.post('/encrypt',apiController.encrypt);
 
 
@@ -22,6 +23,10 @@ router.get('/profile',apiController.profile);
 router.post('/profile',apiController.profilePost);
 
 router.post('/form-profile',apiController.formprofilePost);
+
+router.post('/delete-data',apiController.deleteData);
+
+router.post('/brokerProfile',apiController.brokerProfile);
 
 
 module.exports = router;

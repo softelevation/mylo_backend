@@ -49,12 +49,25 @@ async function brokerProfile(req, res, next){
 
 async function postUsersUpdate(req, res, next){
 	try {
-		let input = req.body;
-		let id = req.params.id;
-		const qb = await dbs.get_connection();
-		qb.update('users', input, {id:id});
-		qb.disconnect();
-		return res.json(halper.api_response(1,'Profile update successfully',input));
+		
+		upload(req, res, function(err) {
+			let inputData = req.body;
+			
+			if (err) {
+				 return res.json("Something went wrong!");
+			 }
+			if(req.file){
+				inputData.image = 'images/'+req.file.filename;
+			}
+			return res.json(halper.api_response(1,'Profile update successfully',inputData));
+		});
+		
+		
+		// let input = req.body;
+		// let id = req.params.id;
+		// const qb = await dbs.get_connection();
+		// qb.update('users', input, {id:id});
+		// qb.disconnect();
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	}

@@ -7,7 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('15-dec:server');
 var http = require('http');
-
+var apiModel = require('../Model/model');
 /**
  * Get port from environment and store in Express.
  */
@@ -20,6 +20,26 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+var io = require("socket.io")(server);
+
+io.on('connection', (socket) => {
+  console.log('A user is connected');
+  
+	socket.on('status added',function(status){
+	  add_status(status,function(res){
+		if(res){
+			io.emit('refresh feed',status);
+		} else {
+			io.emit('error');
+		}
+	  });
+	});
+	
+});
+
+var add_status = function (status,callback) {
+    apiModel.insert('book_nows',{cus_id:status});
+}
 
 /**
  * Listen on provided port, on all network interfaces.

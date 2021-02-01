@@ -32,8 +32,39 @@ module.exports = {
 	formprofilePost: formprofilePost,
 	deleteData: deleteData,
 	brokerProfile: brokerProfile,
-	postUsersUpdate: postUsersUpdate
+	postUsersUpdate: postUsersUpdate,
+	customer_reqest: customer_reqest,
+	bookReqest: bookReqest
 };
+
+async function bookReqest(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		let input = req.body;
+		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		qb.update('book_nows', {broker_id: user.id}, {id:input.book_id});
+		const users = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.id',input.book_id).limit(1).from('book_nows').join('users','users.id=book_nows.cus_id').get();
+		return res.json(halper.api_response(1,'booking request successfully',users[0]));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+}
+
+async function customer_reqest(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		const upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status','pending').from('book_nows').join('users','users.id=book_nows.cus_id').get();
+		const in_progress = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status !=','pending').from('book_nows').join('users','users.id=book_nows.cus_id').get();
+		return res.json(halper.api_response(1,'customer request',{upcoming:upcoming,in_progress:in_progress}));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+}
 
 async function brokerProfile(req, res, next){
 	try {

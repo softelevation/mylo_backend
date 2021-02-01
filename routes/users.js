@@ -27,6 +27,8 @@ router.post('/form-profile',apiController.formprofilePost);
 router.post('/delete-data',apiController.deleteData);
 
 router.post('/brokerProfile',apiController.brokerProfile);
+router.get('/customer-reqest',apiController.customer_reqest);
+router.post('/book-reqest',apiController.bookReqest);
 
 
 module.exports = router;

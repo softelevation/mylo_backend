@@ -8,6 +8,8 @@ var app = require('../app');
 var debug = require('debug')('15-dec:server');
 var http = require('http');
 var apiModel = require('../Model/model');
+const jwt = require('jsonwebtoken');
+const accessTokenSecret = 'youraccesstokensecret';
 /**
  * Get port from environment and store in Express.
  */
@@ -25,7 +27,7 @@ var io = require("socket.io")(server);
 io.on('connection', (socket) => {
   console.log('A user is connected');
   
-	socket.on('status added',function(status){
+	socket.on('book_now',function(status){
 	  add_status(status,function(res){
 		if(res){
 			io.emit('refresh feed',status);
@@ -37,8 +39,13 @@ io.on('connection', (socket) => {
 	
 });
 
-var add_status = function (status,callback) {
-    apiModel.insert('book_nows',{cus_id:status});
+var add_status = async function (status,callback) {
+	try {
+		const user = await jwt.verify(status, accessTokenSecret);
+		apiModel.insert('book_nows',{cus_id:user.id});	
+	} catch (err) {
+		
+	}
 }
 
 /**

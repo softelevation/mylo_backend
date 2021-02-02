@@ -26,9 +26,8 @@ var io = require("socket.io")(server);
 
 io.on('connection', (socket) => {
 	socket.on('book_now', (msg) => {
-		io.emit('refresh_feed',{status:1});
+		io.emit('refresh_feed',{status:1,type:'book_broker'});
 	});
-	
 });
 
 var add_status = async function (msg,callback) {

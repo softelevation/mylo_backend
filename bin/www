@@ -44,7 +44,7 @@ var change_status = async function (msg,callback) {
 		console.log('yesssssss');
 		return 'qqqqqqqqqqqqqq';
 	} catch (err) {
-		console.log('nooooooo');
+		console.log(msg);
 		return 'xxxxxxxxx';
 	}
 }

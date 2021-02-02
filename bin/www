@@ -27,7 +27,7 @@ var io = require("socket.io")(server);
 
 io.on('connection', (socket) => {
 	socket.on('book_now', (msg) => {
-		console.log(add_status(msg));
+		add_status(msg);
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
 	});
 	
@@ -48,14 +48,14 @@ var change_status = async function (msg,callback) {
 }
 
 var add_status = async function (msg,callback) {
-	// try {
+	try {
 		var now = new Date();
 		const user = await jwt.verify(msg, accessTokenSecret);
 		apiModel.insert('book_nows',{cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')});
 		return 'qqqqqqqqqqqqqq';
-	// } catch (err) {
-		// return 'xxxxxxxxx';
-	// }
+	} catch (err) {
+		return 'xxxxxxxxx';
+	}
 }
 
 /**

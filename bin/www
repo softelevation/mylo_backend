@@ -38,15 +38,14 @@ io.on('connection', (socket) => {
 });
 
 var change_status = async function (msg,callback) {
-	try {
+	// try {
 		const user = await jwt.verify(msg, accessTokenSecret);
-		apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
-		console.log('yesssssss');
-		return 'qqqqqqqqqqqqqq';
-	} catch (err) {
-		console.log(msg);
-		return 'xxxxxxxxx';
-	}
+		console.log(apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id}));
+		// );
+		// return 'qqqqqqqqqqqqqq';
+	// } catch (err) {
+		// return 'xxxxxxxxx';
+	// }
 }
 
 var add_status = async function (msg,callback) {

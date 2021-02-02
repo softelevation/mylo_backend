@@ -27,6 +27,7 @@ module.exports = {
 	registered: registered,
 	verifyOtp: verifyOtp,
 	profile: profile,
+	profileById: profileById,
 	dashboard: dashboard,
 	profilePost: profilePost,
 	formprofilePost: formprofilePost,
@@ -67,14 +68,16 @@ async function customer_reqest(req, res, next){
 }
 
 async function brokerProfile(req, res, next){
+	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
-		const qb = await dbs.get_connection();
+		
 		let users = await qb.select('*').where('id',input.id).limit(1).get('users');
-		qb.disconnect();
 		return res.json(halper.api_response(1,'broker profile',users[0]));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
 	}
 }
 
@@ -105,40 +108,58 @@ async function postUsersUpdate(req, res, next){
 }
 
 async function deleteData(req, res, next){
+	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
-		const qb = await dbs.get_connection();
 		const results = await qb.delete('users', {id: input.id});
-		qb.disconnect();
 		return res.json(halper.api_response(1,input.action+' delete successfully',input));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
 	}
 }
 
 
 async function dashboard(req, res, next){
+	const qb = await dbs.get_connection();
 	try {
-		const qb = await dbs.get_connection();
 		let users = await qb.select('id').where('roll_id', 1).get('users');
 		let brokes = await qb.select('id').where('roll_id', 2).get('users');
 		qb.disconnect();
 		return res.json(halper.api_response(1,'Dashboard',{customers:users.length,brokes:brokes.length}));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
 	}
 }
 
 
-async function profile(req, res, next){
+async function profileById(req, res, next){
+	const qb = await dbs.get_connection();
 	try {
-		const qb = await dbs.get_connection();
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
-		
-		let users = await qb.select(['name','email','phone_no','roll_id','address']).where({id: user.id}).limit(1).get('users');
+		let users = await qb.select(['name','email','phone_no','image','roll_id','address','qualifications','banks','about_me']).where({id: req.params.id}).limit(1).get('users');
+		let user_s = (users.length > 0) ? users[0]:{};
+		return res.json(halper.api_response(1,'User profile',user_s));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+}
+
+async function profile(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		let users = await qb.select(['name','email','phone_no','image','roll_id','address','qualifications','banks','about_me']).where({id: user.id}).limit(1).get('users');
 		return res.json(halper.api_response(1,'User profile',users[0]));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
 	}
 }
 
@@ -155,6 +176,8 @@ async function profilePost(req, res, next){
 		return res.json(halper.api_response(1,'Profile update successfully',inputRequest));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));
+	} finally {
+		qb.disconnect();
 	}
 }
 
@@ -176,11 +199,12 @@ async function formprofilePost(req, res, next){
 				inputData.image = 'images/'+req.file.filename;
 			}
 			qb.update('users', inputData, {id:user.id});
-			qb.disconnect();
 			res.status(200).json(halper.api_response(1,'Profile update successfully',inputData));
 		});
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));
+	} finally {
+		qb.disconnect();
 	}
 }
 
@@ -221,6 +245,8 @@ async function verifyOtp(req, res, next){
 		});
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));
+	} finally {
+		qb.disconnect();
 	}
 }
 
@@ -288,48 +314,50 @@ async function postUsers(req, res, next){
 		res.status(200).json(halper.api_response(1,'user add successfully',inputData));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
 	}
 }
 
 
 async function allUsers(req, res, next){
 	const qb = await dbs.get_connection();
-	
-	qb.select('*').where({roll_id: 1}).get('users', async (err, response) => {
-		qb.disconnect();
+	try {
+		qb.select('*').where({roll_id: 1}).get('users', async (err, response) => {
 			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
-			
 			return res.status(200).json(halper.api_response(1,'Users list',response));
 		});
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
 }
 
 async function allBrokers(req, res, next){
 	const qb = await dbs.get_connection();
-	qb.select('*').where({roll_id: 2}).get('users', async (err, response) => {
-		qb.disconnect();
+	try {
+		qb.select('*').where({roll_id: 2}).get('users', async (err, response) => {
 			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
-			
 			return res.status(200).json(halper.api_response(1,'Brokers list',response));
 		});
-		
-		
-	// var sql = "SELECT * FROM `users` WHERE `roll_id` = 2 ORDER BY id DESC";
-	// db.query(sql, function(err, rows, fields) {
-		// if (err) {
-		  // res.status(500).json({ error: 'Something failed!' })
-		// }else {
-			// if(rows.length >0){
-				// return res.status(200).json(halper.api_response(1,'Broker detail',rows));
-				// return res.status(200).json(rows);
-			// }else{
-				// res.status(206).json(halper.api_response(0,'Email and password does not match',{}));
-			// }
-		// }
-	// });
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
 }
 
 
 function defaultUrl(req, res, next){
+	apiModel.updateOrCreate('testing', {
+			name: 'aman 5',
+			message: 'mwesage 5',
+			expire_year: 2023,
+			phone: 123453,
+			amount: 40
+	}, {name :'aman 3',message : 'mwesage 3'});
+	
 	var sql = "SELECT * FROM `admins`";
 	db.query(sql, function(err, rows, fields) {
 		if (err) {

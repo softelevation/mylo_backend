@@ -20,6 +20,7 @@ router.post('/encrypt',apiController.encrypt);
 router.post('/registered',apiController.registered);
 router.post('/verify-otp',apiController.verifyOtp);
 router.get('/profile',apiController.profile);
+router.get('/profile/:id',apiController.profileById);
 router.post('/profile',apiController.profilePost);
 
 router.post('/form-profile',apiController.formprofilePost);

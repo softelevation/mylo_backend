@@ -48,14 +48,14 @@ var change_status = async function (msg,callback) {
 }
 
 var add_status = async function (msg,callback) {
-	try {
+	// try {
 		var now = new Date();
 		const user = await jwt.verify(msg, accessTokenSecret);
 		apiModel.insert('book_nows',{cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')});
 		return 'qqqqqqqqqqqqqq';
-	} catch (err) {
-		return 'xxxxxxxxx';
-	}
+	// } catch (err) {
+		// return 'xxxxxxxxx';
+	// }
 }
 
 /**

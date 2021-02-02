@@ -7,7 +7,7 @@
     <script src = "http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
     <script>
     $(document).ready(function(){
-          var socket = io.connect('http://localhost:3000');
+          var socket = io.connect('');
           $("#add_status").click(function(){
 		  
             socket.emit('book_now',$("#comment").val());

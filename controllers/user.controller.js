@@ -221,7 +221,6 @@ async function verifyOtp(req, res, next){
 				if(response.length > 0){
 					if(inputRequest.otp !== '123456'){
 						qb.select('otp').where({user_id: response[0].id,otp: inputRequest.otp}).get('otps', (err, otp_s) => {
-							// console.log(otp_s);
 							if(otp_s.length > 0){
 								const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].role_id }, accessTokenSecret);
 								inputRequest.accessToken = accessToken;
@@ -229,7 +228,7 @@ async function verifyOtp(req, res, next){
 								inputRequest.roll_name = halper.get_role_id(response[0].role_id);
 								return res.json(halper.api_response(1,'Otp match successfully',inputRequest));
 							}else{
-								return res.json(halper.api_response(0,'Otp not match successfully',{}));
+								return res.json(halper.api_response(0,'Invalid otp',{}));
 							}
 						});
 					}else{

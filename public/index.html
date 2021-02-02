@@ -11,10 +11,13 @@
           $("#add_status").click(function(){
 		  
             socket.emit('book_now',$("#comment").val());
+			
+			socket.on('refresh_feed',function(msg){
+			  
+				console.log(msg);
+			});
           });
-          socket.on('refresh feed',function(msg){
-            $("#show_comments").append(msg + '<br /><br />');
-          });
+          
     });
     </script>
   </head>

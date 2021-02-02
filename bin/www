@@ -25,26 +25,21 @@ var server = http.createServer(app);
 var io = require("socket.io")(server);
 
 io.on('connection', (socket) => {
-  console.log('A user is connected');
-  
-	socket.on('book_now',function(status){
-	  add_status(status,function(res){
-		if(res){
-			io.emit('refresh feed',status);
-		} else {
-			io.emit('error');
-		}
-	  });
+	console.log('A user is connected');
+	socket.on('book_now', (msg) => {
+		console.log(msg);
+		io.emit('refresh_feed',add_status(msg));
 	});
 	
 });
 
-var add_status = async function (status,callback) {
+var add_status = async function (msg,callback) {
 	try {
-		const user = await jwt.verify(status, accessTokenSecret);
-		apiModel.insert('book_nows',{cus_id:user.id});	
+		const user = await jwt.verify(msg, accessTokenSecret);
+		apiModel.insert('book_nows',{cus_id:user.id});
+		return 'qqqqqqqqqqqqqq';
 	} catch (err) {
-		
+		return false;
 	}
 }
 

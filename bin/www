@@ -26,6 +26,7 @@ var io = require("socket.io")(server);
 
 io.on('connection', (socket) => {
 	socket.on('book_now', (msg) => {
+		console.log(add_status(msg));
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
 	});
 });
@@ -36,7 +37,7 @@ var add_status = async function (msg,callback) {
 		apiModel.insert('book_nows',{cus_id:user.id});
 		return 'qqqqqqqqqqqqqq';
 	} catch (err) {
-		return 1;
+		return 'xxxxxxxxx';
 	}
 }
 

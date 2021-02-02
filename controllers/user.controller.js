@@ -229,7 +229,7 @@ async function registered(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		let inputRequest = req.body;
-		var otp = Math.floor(1000 + Math.random() * 9000);
+		var otp = Math.floor(100000 + Math.random() * 900000);
 		qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', async (err, response) => {
 			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
 			

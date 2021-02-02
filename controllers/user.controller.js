@@ -56,9 +56,9 @@ async function customer_reqest(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
-		const upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status','pending').from('book_nows').join('users','users.id=book_nows.cus_id').get();
-		const in_progress = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status !=','pending').from('book_nows').join('users','users.id=book_nows.cus_id').get();
-		return res.json(halper.api_response(1,'customer request',{upcoming:upcoming,in_progress:in_progress}));
+		const upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status','pending').or_where('book_nows.status', 'in_progress').from('book_nows').join('users','users.id=book_nows.cus_id').get();
+		const completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status','completed').or_where('book_nows.status', 'rejected').from('book_nows').join('users','users.id=book_nows.cus_id').get();
+		return res.json(halper.api_response(1,'customer request',{upcoming:upcoming,completed:completed}));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
@@ -234,8 +234,7 @@ async function registered(req, res, next){
 			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
 			
 			if(response.length > 0){
-				qb.update('otps', {otp: otp}, {user_id:response[0].id});
-				qb.disconnect();
+				apiModel.updateOrCreate('otps', {otp: otp}, {user_id:response[0].id});
 				inputRequest.otp = otp;
 				inputRequest.roll_id = parseInt(response[0].roll_id);
 				inputRequest.roll_name = halper.get_role_id(inputRequest.roll_id);
@@ -245,7 +244,6 @@ async function registered(req, res, next){
 				const insert_id = await qb.returning('id').insert('users', inputRequest);
 				let user_id = insert_id.insertId;
 				qb.insert('otps', {user_id: user_id,otp:otp});
-				qb.disconnect();
 				inputRequest.otp = otp;
 				inputRequest.roll_id = halper.get_role_id('user');
 				inputRequest.roll_name = halper.get_role_id(1);
@@ -255,6 +253,8 @@ async function registered(req, res, next){
 		
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));
+	} finally {
+		qb.disconnect();
 	}
 }
 

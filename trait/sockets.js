@@ -22,7 +22,9 @@ async function add_status(object1) {
 
 async function change_status(msg) {
 	const user = await jwt.verify(msg.token, accessTokenSecret);
-	notification_change_request(msg);
+	if(msg.status == 'in_progress'){
+		notification_change_request(msg);
+	}
 	apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
 }
 

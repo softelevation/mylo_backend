@@ -23,6 +23,7 @@ async function add_status(object1) {
 async function change_status(msg) {
 	const user = await jwt.verify(msg.token, accessTokenSecret);
 	if(msg.status == 'in_progress'){
+		msg.broker_id = user.id;
 		notification_change_request(msg);
 	}
 	apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
@@ -37,13 +38,15 @@ var notification_change_request = async function (msg,callback) {
 		const qb = await dbs.get_connection();
 		const users = await qb.select(['users.name','users.token']).where('book_nows.id',msg.id).limit(1).from('book_nows').join('users','users.id=book_nows.cus_id').get();
 		
-		let username = (users[0].name) ? users[0].name: "Broker";
+		let brokers = await qb.select(['name']).where({id: msg.broker_id}).get('users');
+		
+		let username = (brokers[0].name) ? brokers[0].name: "Broker";
 		
 		var message = {
 			to : users[0].token,
 			notification: {
 				title: 'Booking request', 
-				body: username+' has accept your request',
+				body: username+' has accepted your request',
 			},
 			data: {
 				my_key: 'my value',

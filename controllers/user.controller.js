@@ -234,7 +234,7 @@ async function verifyOtp(req, res, next){
 		let inputRequest = req.body;
 		qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', (err, response) => {
 				if(response.length > 0){
-					qb.update('users', {token: inputRequest.phone_no}, {phone_no: inputRequest.phone_no});
+					qb.update('users', {token: inputRequest.token}, {phone_no: inputRequest.phone_no});
 					if(inputRequest.otp !== '123456'){
 						qb.select('otp').where({user_id: response[0].id,otp: inputRequest.otp}).get('otps', (err, otp_s) => {
 							if(otp_s.length > 0){

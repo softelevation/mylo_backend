@@ -22,7 +22,43 @@ async function add_status(object1) {
 
 async function change_status(msg) {
 	const user = await jwt.verify(msg.token, accessTokenSecret);
+	notification_change_request(msg);
 	apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
+}
+
+var notification_change_request = async function (msg,callback) {
+	try {
+		var FCM = require('fcm-node');
+		var serverKey = process.env.cus_key;
+		var fcm = new FCM(serverKey);
+	
+		const qb = await dbs.get_connection();
+		const users = await qb.select(['users.name','users.token']).where('book_nows.id',msg.id).limit(1).from('book_nows').join('users','users.id=book_nows.cus_id').get();
+		
+		let username = (users[0].name) ? users[0].name: "Broker";
+		
+		var message = {
+			to : users[0].token,
+			notification: {
+				title: 'Booking request', 
+				body: username+' has accept your request',
+			},
+			data: {
+				my_key: 'my value',
+				my_another_key: 'my another value'
+			}
+		}
+		fcm.send(message, function(err, response){
+			if (err) {
+				// res.status(200).json(halper.api_response(0,'This is invalid request',"Something has gone wrong!"));
+			} else {
+				// res.status(200).json(halper.api_response(1,'Brokers list',response));
+			}
+		});
+		// return 'qqqqqqqqqqqqqq';
+	} catch (err) {
+		// return 'xxxxxxxxx';
+	}
 }
 
 

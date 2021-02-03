@@ -7,10 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('15-dec:server');
 var http = require('http');
-var apiModel = require('../Model/model');
-const jwt = require('jsonwebtoken');
-const accessTokenSecret = 'youraccesstokensecret';
-const dateFormat = require("dateformat");
+var sockets = require('../trait/sockets');
 /**
  * Get port from environment and store in Express.
  */
@@ -27,36 +24,16 @@ var io = require("socket.io")(server);
 
 io.on('connection', (socket) => {
 	socket.on('book_now', (msg) => {
-		add_status(msg);
+		sockets.add_status(msg);
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
 	});
 	
 	socket.on('request', (msg) => {
-		change_status(msg);
+		sockets.change_status(msg);
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
 	});
 });
 
-var change_status = async function (msg,callback) {
-	try {
-		const user = await jwt.verify(msg.token, accessTokenSecret);
-		console.log(apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id}));
-		return 'qqqqqqqqqqqqqq';
-	} catch (err) {
-		return 'xxxxxxxxx';
-	}
-}
-
-var add_status = async function (msg,callback) {
-	try {
-		var now = new Date();
-		const user = await jwt.verify(msg, accessTokenSecret);
-		apiModel.insert('book_nows',{cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')});
-		return 'qqqqqqqqqqqqqq';
-	} catch (err) {
-		return 'xxxxxxxxx';
-	}
-}
 
 /**
  * Listen on provided port, on all network interfaces.

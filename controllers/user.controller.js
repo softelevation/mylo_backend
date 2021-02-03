@@ -234,6 +234,7 @@ async function verifyOtp(req, res, next){
 		let inputRequest = req.body;
 		qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', (err, response) => {
 				if(response.length > 0){
+					qb.update('users', {token: inputRequest.phone_no}, {phone_no: inputRequest.phone_no});
 					if(inputRequest.otp !== '123456'){
 						qb.select('otp').where({user_id: response[0].id,otp: inputRequest.otp}).get('otps', (err, otp_s) => {
 							if(otp_s.length > 0){
@@ -364,19 +365,26 @@ async function allBrokers(req, res, next){
 
 
 function defaultUrl(req, res, next){
-	apiModel.updateOrCreate('testing', {
-			name: 'aman 5',
-			message: 'mwesage 5',
-			expire_year: 2023,
-			phone: 123453,
-			amount: 40
-	}, {name :'aman 3',message : 'mwesage 3'});
 	
-	var sql = "SELECT * FROM `admins`";
-	db.query(sql, function(err, rows, fields) {
-		if (err) {
-		  res.status(500).send({ error: 'Something failed!' })
-		}
-		res.status(200).json(halper.api_response(200,'user login success',rows))
-	});
+	var FCM = require('fcm-node');
+	var serverKey = process.env.broker_key;
+	var fcm = new FCM(serverKey);
+	var message = {
+        registration_ids : ['d00GOTUoTHSpLI-r-7Haln:APA91bF3uT-UbpUDOE22wkZUlJcqiZnWEu_HTZHtjFMN9tZCdmbmPnVpIMSxP1HmD_LJB7VomNqBg1GoSeZiZaBfWxVmxXXAhf63PCW6PWYr2B2jLqJlHny7ovOk2iosZPEWo0wqIDY2','fes36takTGWVstDfR0IF1k:APA91bEgdd8-ccekTZvrV-Y6LSW4pVycvgwzq6GCKvVTkgY0R6eZZYsGGwmnpQsFxK8qrgbB_DcvyJ4oXlg7u2KomJYqCPBOzkFf8nEZ428masYInid9F7DRAzQ-Py-6s5nw3qJL-Xaa'],
+        notification: {
+            title: 'Title of your push notification', 
+            body: 'Body of your push notification' 
+        },
+        data: {
+            my_key: 'my value',
+            my_another_key: 'my another value'
+        }
+    }
+	fcm.send(message, function(err, response){
+        if (err) {
+			res.status(200).json(halper.api_response(0,'This is invalid request',"Something has gone wrong!"));
+        } else {
+			res.status(200).json(halper.api_response(1,'Brokers list',response));
+        }
+    });
 }

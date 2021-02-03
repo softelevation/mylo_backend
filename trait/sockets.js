@@ -38,7 +38,7 @@ var notification_change_request = async function (msg,callback) {
 		const qb = await dbs.get_connection();
 		const users = await qb.select(['users.name','users.token']).where('book_nows.id',msg.id).limit(1).from('book_nows').join('users','users.id=book_nows.cus_id').get();
 		
-		let brokers = await qb.select(['name']).where({id: msg.broker_id}).get('users');
+		let brokers = await qb.select(['name']).where({id: msg.broker_id}).limit(1).get('users');
 		
 		let username = (brokers[0].name) ? brokers[0].name: "Broker";
 		

@@ -45,7 +45,7 @@ var notification_change_request = async function (msg,callback) {
 		var message = {
 			to : users[0].token,
 			notification: {
-				title: 'Booking request', 
+				title: 'Booking accepted', 
 				body: username+' has accepted your request',
 			},
 			data: {

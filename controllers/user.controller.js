@@ -268,7 +268,7 @@ async function registered(req, res, next){
 			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
 			
 			if(response.length > 0){
-				apiModel.updateOrCreate('otps', {otp: otp}, {user_id:response[0].id});
+				apiModel.updateOrCreate('otps', {user_id:response[0].id,otp: otp}, {user_id:response[0].id});
 				inputRequest.otp = otp;
 				inputRequest.roll_id = parseInt(response[0].roll_id);
 				inputRequest.roll_name = halper.get_role_id(inputRequest.roll_id);

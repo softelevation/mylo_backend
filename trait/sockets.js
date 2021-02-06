@@ -7,7 +7,8 @@ const dateFormat = require("dateformat");
 
 module.exports = {
 	add_status: add_status,
-	change_status: change_status
+	change_status: change_status,
+	broker_detail: broker_detail
 };
 
 
@@ -17,6 +18,20 @@ async function add_status(object1) {
 	const user = await jwt.verify(object1, accessTokenSecret);
 	notification_s(user.id);
 	apiModel.insert('book_nows',{cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')});
+}
+
+async function broker_detail(msg) {
+	const qb = await dbs.get_connection();
+	try {
+		const user = await jwt.verify(msg.token, accessTokenSecret);
+		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
+		return users[0];
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+	
 }
 
 

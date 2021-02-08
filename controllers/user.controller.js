@@ -180,7 +180,7 @@ async function profilePost(req, res, next){
 							email: req.body.email,
 							address: req.body.address
 						}
-		qb.update('users', inputRequest, {id:user.id});
+		qb.update('users', halper.empty_array(inputRequest), {id:user.id});
 		return res.json(halper.api_response(1,'Profile update successfully',inputRequest));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));

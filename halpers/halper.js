@@ -39,6 +39,12 @@ class halper {
 			data : data
 		};
 	}
+	
+	
+	empty_array(obj){
+		   let result =  Object.entries(obj).reduce((a,[k,v]) => (v == '' ? a : (a[k]=v, a)), {});
+		   return result;
+	}
 
 }
 

@@ -20,6 +20,8 @@ var upload = multer({ storage: storage }).single('image');
 module.exports = {
 	defaultUrl: defaultUrl,
 	allUsers: allUsers,
+	allUsersList: allUsersList,
+	allbroker_list: allbroker_list,
 	allBrokers: allBrokers,
 	postUsers: postUsers,
 	loginUser: loginUser,
@@ -331,9 +333,12 @@ async function postUsers(req, res, next){
 async function allUsers(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
-		qb.select('*').where({roll_id: 1}).get('users', async (err, response) => {
+		qb.select('*').where({roll_id: 1}).order_by('id', 'desc').limit(10).get('users', async (err, response) => {
 			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
-			return res.status(200).json(halper.api_response(1,'Users list',response));
+			
+			let count_user = await qb.select('*').where({roll_id: 1}).get('users');
+			// console.log();
+			return res.status(200).json(halper.api_response(1,count_user.length,response));
 		});
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
@@ -342,12 +347,46 @@ async function allUsers(req, res, next){
 	}
 }
 
+async function allUsersList(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		let inputData = req.body.limit_to;
+		qb.select('*').where({roll_id: 1}).order_by('id', 'desc').limit(10).offset(inputData).get('users', async (err, response) => {
+			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
+			let count_user = await qb.select('*').where({roll_id: 1}).get('users');
+			return res.status(200).json(halper.api_response(1,count_user.length,response));
+		});
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+}
+
+async function allbroker_list(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		let inputData = req.body.limit_to;
+		qb.select('*').where({roll_id: 2}).order_by('id', 'desc').limit(10).offset(inputData).get('users', async (err, response) => {
+			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
+			let count_user = await qb.select('*').where({roll_id: 2}).get('users');
+			return res.status(200).json(halper.api_response(1,count_user.length,response));
+		});
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+}
+
+
 async function allBrokers(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		qb.select('*').where({roll_id: 2}).get('users', async (err, response) => {
 			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
-			return res.status(200).json(halper.api_response(1,'Brokers list',response));
+			let count_user = await qb.select('*').where({roll_id: 2}).get('users');
+			return res.status(200).json(halper.api_response(1,count_user.length,response));
 		});
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));

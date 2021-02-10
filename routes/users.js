@@ -10,6 +10,8 @@ apiController = require('../controllers/user.controller');
 router.get('/',apiController.defaultUrl);
 router.post('/login',apiController.loginUser);
 router.get('/users',apiController.allUsers);
+router.post('/user_list',apiController.allUsersList);
+router.post('/broker_list',apiController.allbroker_list);
 router.get('/brokers',apiController.allBrokers);
 router.get('/dashboard',apiController.dashboard);
 router.post('/users',apiController.postUsers);

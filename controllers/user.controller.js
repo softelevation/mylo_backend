@@ -177,12 +177,14 @@ async function profilePost(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		let users = await qb.select('phone_no').where({id: user.id}).limit(1).get('users');
 		let inputRequest = {
 							name: req.body.name,
 							email: req.body.email,
 							address: req.body.address
 						}
 		qb.update('users', halper.empty_array(inputRequest), {id:user.id});
+		inputRequest.phone_no = users[0].phone_no;
 		return res.json(halper.api_response(1,'Profile update successfully',inputRequest));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));

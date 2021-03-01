@@ -90,8 +90,8 @@ var notification_s = async function (msg,callback) {
 		var fcm = new FCM(serverKey);
 	
 		const qb = await dbs.get_connection();
-		let users = await qb.select(['id','name','email','phone_no','token']).where({id: msg,status:1}).get('users');
-		let brokers = await qb.select(['token']).where({roll_id: 2}).get('users');
+		let users = await qb.select(['id','name','email','phone_no','token']).where({id: msg}).get('users');
+		let brokers = await qb.select(['token']).where({roll_id: 2,status:1}).get('users');
 		let result = brokers.map(a => a.token);
 		
 		let username = (users[0].name) ? users[0].name: "Customer";

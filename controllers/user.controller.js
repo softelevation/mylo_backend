@@ -38,7 +38,8 @@ module.exports = {
 	postUsersUpdate: postUsersUpdate,
 	customer_reqest: customer_reqest,
 	broker_reqest: broker_reqest,
-	bookReqest: bookReqest
+	bookReqest: bookReqest,
+	brokerStatus: brokerStatus
 };
 
 async function bookReqest(req, res, next){
@@ -421,4 +422,19 @@ function defaultUrl(req, res, next){
 			res.status(200).json(halper.api_response(1,'Brokers list',response));
         }
     });
+}
+
+async function brokerStatus(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		let statu_s = (req.body.status && (req.body.status == 1 || req.body.status == 2)) ? req.body.status : 1;
+		apiModel.update('users', {id:user.id}, {status: statu_s});
+		return res.status(200).json(halper.api_response(1,'Status change successfully',{}));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+	
 }

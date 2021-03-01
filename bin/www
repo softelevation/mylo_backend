@@ -26,6 +26,8 @@ io.on('connection', (socket) => {
 	socket.on('book_now', async (msg) => {
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
 		let user_detail = await sockets.add_status(msg);
+		console.log('qqqqqqqqqqq');
+		console.log(user_detail);
 		io.emit('customer_details',user_detail);
 	});
 	

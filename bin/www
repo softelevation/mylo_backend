@@ -23,12 +23,10 @@ var server = http.createServer(app);
 var io = require("socket.io")(server);
 
 io.on('connection', (socket) => {
-	socket.on('book_now', async (msg) => {
+	socket.on('book_now', (msg) => {
+		sockets.add_status(msg);
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
-		let user_detail = await sockets.add_status(msg);
-		console.log('qqqqqqqqqqq');
-		console.log(user_detail);
-		io.emit('customer_details',user_detail);
+		io.emit('customer_details',{messages:'New booking recived',type:0});
 	});
 	
 	socket.on('request', async (msg) => {

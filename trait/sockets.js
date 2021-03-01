@@ -13,19 +13,11 @@ module.exports = {
 
 
 async function add_status(object1) {
-	const qb = await dbs.get_connection();
-	try {
-		var now = new Date();
-		const user = await jwt.verify(object1, accessTokenSecret);
-		notification_s(user.id);
-		apiModel.insert('book_nows',{cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')});
-		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
-		return users[0];
-	} catch (err) {
-		return res.json(halper.api_response(0,'This is invalid request',{}));
-	} finally {
-		qb.disconnect();
-	}
+	
+	var now = new Date();
+	const user = await jwt.verify(object1, accessTokenSecret);
+	notification_s(user.id);
+	apiModel.insert('book_nows',{cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')});
 }
 
 async function broker_detail(msg) {

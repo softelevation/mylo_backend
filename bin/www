@@ -26,7 +26,6 @@ io.on('connection', (socket) => {
 	socket.on('book_now', (msg) => {
 		sockets.add_status(msg);
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
-		console.log('qqqqqqqqqqqqqq');
 		io.emit('customer_details',{messages:'New booking recived',type:0});
 	});
 	

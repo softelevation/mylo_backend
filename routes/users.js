@@ -35,6 +35,7 @@ router.get('/broker-reqest',apiController.broker_reqest);
 router.post('/book-reqest',apiController.bookReqest);
 
 router.post('/broker-status',apiController.brokerStatus);
+router.get('/log-out',apiController.logOut);
 
 
 module.exports = router;

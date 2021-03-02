@@ -39,8 +39,23 @@ module.exports = {
 	customer_reqest: customer_reqest,
 	broker_reqest: broker_reqest,
 	bookReqest: bookReqest,
+	logOut: logOut,
 	brokerStatus: brokerStatus
 };
+
+async function logOut(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		qb.update('users', {token:null}, {id: user.id});
+		return res.json(halper.api_response(1,'user logout successfully',{}));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+}
+
 
 async function bookReqest(req, res, next){
 	const qb = await dbs.get_connection();

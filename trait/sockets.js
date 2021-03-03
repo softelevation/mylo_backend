@@ -18,9 +18,12 @@ async function add_status(object1) {
 		var now = new Date();
 		const user = await jwt.verify(object1, accessTokenSecret);
 		notification_s(user.id);
-		apiModel.insert('book_nows',{cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')});
+		let book_now = await qb.returning('id').insert('book_nows', {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')});
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
-		return users[0];
+		return {
+			users: users[0],
+			book_now: book_now
+		};
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {

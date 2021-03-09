@@ -251,32 +251,57 @@ async function verifyOtp(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		let inputRequest = req.body;
-		qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', (err, response) => {
-				if(response.length > 0){
-					qb.update('users', {token: inputRequest.token}, {phone_no: inputRequest.phone_no});
-					if(inputRequest.otp !== '123456'){
-						qb.select('otp').where({user_id: response[0].id,otp: inputRequest.otp}).get('otps', (err, otp_s) => {
-							if(otp_s.length > 0){
-								const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].role_id }, accessTokenSecret);
-								inputRequest.accessToken = accessToken;
-								inputRequest.roll_id = response[0].role_id;
-								inputRequest.roll_name = halper.get_role_id(response[0].role_id);
-								return res.json(halper.api_response(1,'Otp match successfully',inputRequest));
-							}else{
-								return res.json(halper.api_response(0,'Invalid otp',{}));
-							}
-						});
+		if(inputRequest.social_type === 'N'){
+			qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', (err, response) => {
+					if(response.length > 0){
+						qb.update('users', {token: inputRequest.token}, {phone_no: inputRequest.phone_no});
+						if(inputRequest.otp !== '123456'){
+							qb.select('otp').where({user_id: response[0].id,otp: inputRequest.otp}).get('otps', (err, otp_s) => {
+								if(otp_s.length > 0){
+									const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].role_id }, accessTokenSecret);
+									inputRequest.accessToken = accessToken;
+									inputRequest.roll_id = response[0].role_id;
+									inputRequest.roll_name = halper.get_role_id(response[0].role_id);
+									return res.json(halper.api_response(1,'Otp match successfully',inputRequest));
+								}else{
+									return res.json(halper.api_response(0,'Invalid otp',{}));
+								}
+							});
+						}else{
+									const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].role_id }, accessTokenSecret);
+									inputRequest.accessToken = accessToken;
+									inputRequest.roll_id = response[0].role_id;
+									inputRequest.roll_name = halper.get_role_id(response[0].role_id);
+									return res.json(halper.api_response(1,'Otp match successfully',inputRequest));
+						}
 					}else{
-								const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].role_id }, accessTokenSecret);
-								inputRequest.accessToken = accessToken;
-								inputRequest.roll_id = response[0].role_id;
-								inputRequest.roll_name = halper.get_role_id(response[0].role_id);
-								return res.json(halper.api_response(1,'Otp match successfully',inputRequest));
+						return res.json(halper.api_response(0,'This is invalid number',{}));
 					}
-				}else{
-					return res.json(halper.api_response(0,'This is invalid number',{}));
+			});
+		}else{
+			qb.select(['id','roll_id']).where({email: inputRequest.email}).limit(1).get('users', async (err, response) => {
+				if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
+				let objects = {email:inputRequest.email,social_token:inputRequest.social_token,token:inputRequest.token};
+				if(inputRequest.name){
+					objects.name = inputRequest.name;
 				}
-		});
+				if(response.length > 0){
+					apiModel.updateOrCreate('users', objects, {email:inputRequest.email});
+					const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].roll_id }, accessTokenSecret);
+					inputRequest.accessToken = accessToken;
+					inputRequest.roll_id = parseInt(response[0].roll_id);
+					inputRequest.roll_name = halper.get_role_id(parseInt(response[0].roll_id));
+					return res.json(halper.api_response(1,'User login successfully',inputRequest));
+				}else{
+					const insert_id = await qb.returning('id').insert('users', objects);
+					const accessToken = jwt.sign({ id: insert_id.insertId, role_id: halper.get_role_id('user') }, accessTokenSecret);
+					inputRequest.accessToken = accessToken;
+					inputRequest.roll_id = halper.get_role_id('user');
+					inputRequest.roll_name = halper.get_role_id(1);
+					return res.json(halper.api_response(1,'User login successfully',inputRequest));
+				}
+			});
+		}
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));
 	} finally {
@@ -289,53 +314,27 @@ async function registered(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		let inputRequest = req.body;
-		if(inputRequest.social_type === 'N'){
-			var otp = Math.floor(100000 + Math.random() * 900000);
-			qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', async (err, response) => {
-				if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
-				
-				if(response.length > 0){
-					apiModel.updateOrCreate('otps', {user_id:response[0].id,otp: otp}, {user_id:response[0].id});
-					inputRequest.otp = otp;
-					inputRequest.roll_id = parseInt(response[0].roll_id);
-					inputRequest.roll_name = halper.get_role_id(inputRequest.roll_id);
-					// 
-					return res.json(halper.api_response(1,'user create successfully',inputRequest));
-				}else{
-					const insert_id = await qb.returning('id').insert('users', inputRequest);
-					let user_id = insert_id.insertId;
-					qb.insert('otps', {user_id: user_id,otp:otp});
-					inputRequest.otp = otp;
-					inputRequest.roll_id = halper.get_role_id('user');
-					inputRequest.roll_name = halper.get_role_id(1);
-					return res.json(halper.api_response(1,'user create successfully',inputRequest));
-				}
-			});
-		}else{
-			qb.select(['id','roll_id']).where({email: inputRequest.email}).limit(1).get('users', async (err, response) => {
-				if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
-				let objects = {email:inputRequest.email,social_token:inputRequest.social_token,token:inputRequest.token};
-				if(inputRequest.name){
-					objects.name = inputRequest.name;
-				}
-				if(response.length > 0){
-					apiModel.updateOrCreate('users', objects, {email:inputRequest.email});
-					const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].role_id }, accessTokenSecret);
-					inputRequest.accessToken = accessToken;
-					inputRequest.roll_id = response[0].role_id;
-					inputRequest.roll_name = halper.get_role_id(response[0].role_id);
-					return res.json(halper.api_response(1,'User login successfully',inputRequest));
-				}else{
-					const insert_id = await qb.returning('id').insert('users', objects);
-					const accessToken = jwt.sign({ id: insert_id.insertId, role_id: halper.get_role_id('user') }, accessTokenSecret);
-					inputRequest.accessToken = accessToken;
-					inputRequest.roll_id = halper.get_role_id('user');
-					inputRequest.roll_name = halper.get_role_id(1);
-					console.log(inputRequest);
-					return res.json(halper.api_response(1,'User login successfully',inputRequest));
-				}
-			});
-		}
+		var otp = Math.floor(100000 + Math.random() * 900000);
+		qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', async (err, response) => {
+			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
+			
+			if(response.length > 0){
+				apiModel.updateOrCreate('otps', {user_id:response[0].id,otp: otp}, {user_id:response[0].id});
+				inputRequest.otp = otp;
+				inputRequest.roll_id = parseInt(response[0].roll_id);
+				inputRequest.roll_name = halper.get_role_id(inputRequest.roll_id);
+				// 
+				return res.json(halper.api_response(1,'user create successfully',inputRequest));
+			}else{
+				const insert_id = await qb.returning('id').insert('users', inputRequest);
+				let user_id = insert_id.insertId;
+				qb.insert('otps', {user_id: user_id,otp:otp});
+				inputRequest.otp = otp;
+				inputRequest.roll_id = halper.get_role_id('user');
+				inputRequest.roll_name = halper.get_role_id(1);
+				return res.json(halper.api_response(1,'user create successfully',inputRequest));
+			}
+		});
 		
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));

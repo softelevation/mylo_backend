@@ -331,6 +331,7 @@ async function registered(req, res, next){
 					inputRequest.accessToken = accessToken;
 					inputRequest.roll_id = halper.get_role_id('user');
 					inputRequest.roll_name = halper.get_role_id(1);
+					console.log(inputRequest);
 					return res.json(halper.api_response(1,'User login successfully',inputRequest));
 				}
 			});

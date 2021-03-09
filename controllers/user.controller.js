@@ -285,6 +285,9 @@ async function verifyOtp(req, res, next){
 				if(inputRequest.name){
 					objects.name = inputRequest.name;
 				}
+				if(inputRequest.image){
+					objects.image = inputRequest.image;
+				}
 				if(response.length > 0){
 					apiModel.updateOrCreate('users', objects, {email:inputRequest.email});
 					const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].roll_id }, accessTokenSecret);

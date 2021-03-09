@@ -314,8 +314,7 @@ async function registered(req, res, next){
 		}else{
 			qb.select(['id','roll_id']).where({email: inputRequest.email}).limit(1).get('users', async (err, response) => {
 				if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
-				
-				let objects = {email:inputRequest.email,social_token:inputRequest.social_token};
+				let objects = {email:inputRequest.email,social_token:inputRequest.social_token,token:inputRequest.token};
 				if(inputRequest.name){
 					objects.name = inputRequest.name;
 				}

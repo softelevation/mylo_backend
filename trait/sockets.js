@@ -102,7 +102,8 @@ var notification_s = async function (msg,callback) {
 	
 		const qb = await dbs.get_connection();
 		let users = await qb.select(['id','name','email','phone_no','token']).where({id: msg}).get('users');
-		let brokers = await qb.select(['token']).where({roll_id: 2,status:1}).get('users');
+		let brokers = await qb.select(['id','email','phone_no','token']).where({roll_id: 2,status:1}).get('users');
+		console.log(brokers);
 		let result = brokers.map(a => a.token);
 		
 		let username = (users[0].name) ? users[0].name: "Customer";

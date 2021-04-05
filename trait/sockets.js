@@ -16,12 +16,15 @@ async function add_status(object1) {
 	const qb = await dbs.get_connection();
 	try {
 		var now = new Date();
+		
+		console.log(object1);
+		
 		const user = await jwt.verify(object1.token, accessTokenSecret);
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')};
 		if(object1.assign_at){
 			object_add.assign_at = object1.assign_at;
 		}
-		console.log(object_add);
+		
 		let book_now = await qb.returning('id').insert('book_nows', object_add);
 		notification_s(user.id);
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
@@ -30,7 +33,6 @@ async function add_status(object1) {
 			book_now: book_now
 		};
 	} catch (err) {
-		
 	} finally {
 		qb.disconnect();
 	}

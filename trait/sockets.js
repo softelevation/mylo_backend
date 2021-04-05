@@ -30,7 +30,7 @@ async function add_status(object1) {
 			book_now: book_now
 		};
 	} catch (err) {
-		return res.json(halper.api_response(0,'This is invalid request',{}));
+		
 	} finally {
 		qb.disconnect();
 	}

@@ -16,11 +16,11 @@ async function add_status(object1) {
 	const qb = await dbs.get_connection();
 	try {
 		// console.log('wwwwwwwwwwwwwwwwwww')
-		
+		let token_s = '';
 		if (object1.assign_at){
-			let token_s = object1.token;
+			token_s = object1.token;
 		}else{
-			let token_s = object1;
+			token_s = object1;
 		}
 		
 		var now = new Date();

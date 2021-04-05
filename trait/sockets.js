@@ -15,22 +15,26 @@ module.exports = {
 async function add_status(object1) {
 	const qb = await dbs.get_connection();
 	try {
-		console.log(object1);
+		if (typeof object1 != "string"){
+			let token_s = object1.token;
+		}else{
+			let token_s = object1;
+		}
+		
 		var now = new Date();
-		const user = await jwt.verify(object1.token, accessTokenSecret);
+		const user = await jwt.verify(token_s, accessTokenSecret);
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')};
-		if(object1.assign_at){
+		if (typeof object1 != "string"){
 			object_add.assign_at = object1.assign_at;
 		}
 		let book_now = await qb.returning('id').insert('book_nows', object_add);
 		notification_s(user.id);
-		let users = await qb.select('*').where('id','45').limit(1).get('users');
+		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
 		return {
 			users: users[0],
 			book_now: book_now
 		};
 	} catch (err) {
-		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
 		qb.disconnect();
 	}

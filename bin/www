@@ -25,7 +25,6 @@ var io = require("socket.io")(server);
 io.on('connection', (socket) => {
 	socket.on('book_now', async (msg) => {
 		let uuuuuuuuq = await sockets.add_status(msg);
-		console.log(uuuuuuuuq);
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
 		io.emit('customer_details',{messages:'New booking recived',type:0,customer_detail:uuuuuuuuq.users,booking_id:uuuuuuuuq.book_now.insert_id});
 	});

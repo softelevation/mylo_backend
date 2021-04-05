@@ -278,7 +278,7 @@ async function verifyOtp(req, res, next){
 						return res.json(halper.api_response(0,'This is invalid number',{}));
 					}
 			});
-		}else{
+		}else if(inputRequest.social_type === 'F' || inputRequest.social_type === 'G'){
 			qb.select(['id','roll_id']).where({email: inputRequest.email}).limit(1).get('users', async (err, response) => {
 				if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
 				let objects = {email:inputRequest.email,social_token:inputRequest.social_token,token:inputRequest.token};
@@ -304,6 +304,8 @@ async function verifyOtp(req, res, next){
 					return res.json(halper.api_response(1,'User login successfully',inputRequest));
 				}
 			});
+		}else{
+			return res.json(halper.api_response(0,'Parameter is missing',{}));
 		}
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));

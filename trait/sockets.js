@@ -16,9 +16,13 @@ async function add_status(object1) {
 	const qb = await dbs.get_connection();
 	try {
 		var now = new Date();
-		const user = await jwt.verify(object1, accessTokenSecret);
+		const user = await jwt.verify(object1.token, accessTokenSecret);
+		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')};
+		if(object1.assign_at){
+			object_add.assign_at = object1.assign_at;
+		}
+		let book_now = await qb.returning('id').insert('book_nows', object_add);
 		notification_s(user.id);
-		let book_now = await qb.returning('id').insert('book_nows', {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')});
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
 		return {
 			users: users[0],

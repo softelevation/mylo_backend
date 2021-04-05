@@ -15,6 +15,9 @@ module.exports = {
 async function add_status(object1) {
 	const qb = await dbs.get_connection();
 	try {
+		console.log(object1);
+		console.log('wwwwwwwwww');
+		
 		if (typeof object1 != "string"){
 			let token_s = object1.token;
 		}else{

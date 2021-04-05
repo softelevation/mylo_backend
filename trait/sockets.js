@@ -106,8 +106,10 @@ var notification_s = async function (msg,callback) {
 	
 		const qb = await dbs.get_connection();
 		let users = await qb.select(['id','name','email','phone_no','token']).where({id: msg}).get('users');
-		let brokers = await qb.select(['token']).where({roll_id: 2,status:1}).get('users');
+		let brokers = await qb.select(['id','token']).where({roll_id: 2,status:1}).get('users');
 		let result = brokers.map(a => a.token);
+		
+		console.log(brokers);
 		
 		let username = (users[0].name) ? users[0].name: "Customer";
 		var message = {
@@ -123,8 +125,10 @@ var notification_s = async function (msg,callback) {
 		}
 		fcm.send(message, function(err, response){
 			if (err) {
+				console.log('errror');
 				// res.status(200).json(halper.api_response(0,'This is invalid request',"Something has gone wrong!"));
 			} else {
+				console.log(response);
 				// res.status(200).json(halper.api_response(1,'Brokers list',response));
 			}
 		});

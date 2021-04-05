@@ -15,21 +15,19 @@ module.exports = {
 async function add_status(object1) {
 	const qb = await dbs.get_connection();
 	try {
-		if (typeof object1 === 'object' && object1 !== null){
+		// console.log('wwwwwwwwwwwwwwwwwww')
+		
+		if (object1.assign_at){
 			let token_s = object1.token;
 		}else{
 			let token_s = object1;
 		}
 		
-		console.log('wwwwwwwwwwwwwwwwwww');
-		console.log(token_s);
-		console.log('wwwwwwwwwwwwwwwwwww');
-		
 		var now = new Date();
 		const user = await jwt.verify(token_s, accessTokenSecret);
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')};
 		
-		if (typeof object1 === 'object' && object1 !== null){
+		if (object1.assign_at){
 			object_add.assign_at = object1.assign_at;
 		}
 		let book_now = await qb.returning('id').insert('book_nows', object_add);
@@ -40,6 +38,9 @@ async function add_status(object1) {
 			book_now: book_now
 		};
 	} catch (err) {
+		console.log('wwwwwwwwwwwwwwwwwww');
+		console.log(err);
+		console.log('wwwwwwwwwwwwwwwwwww');
 	} finally {
 		qb.disconnect();
 	}

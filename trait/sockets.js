@@ -21,6 +21,7 @@ async function add_status(object1) {
 		if(object1.assign_at){
 			object_add.assign_at = object1.assign_at;
 		}
+		console.log(object_add);
 		let book_now = await qb.returning('id').insert('book_nows', object_add);
 		notification_s(user.id);
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');

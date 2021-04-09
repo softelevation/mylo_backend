@@ -28,7 +28,7 @@ async function add_status(object1) {
 		let brokers = await qb.select(['id','token']).where({roll_id: 2,status:1}).get('users');
 		let result = brokers.map(a => a.token);
 		let result_id = brokers.map(a => '-'+a.id+'-');
-		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss'),for_broker:result_id.toString()};
+		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d H:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d H:MM:ss'),for_broker:result_id.toString()};
 		
 		if (object1.assign_at){
 			object_add.assign_at = object1.assign_at;

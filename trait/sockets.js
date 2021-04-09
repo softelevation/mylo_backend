@@ -16,23 +16,28 @@ async function add_status(object1) {
 	const qb = await dbs.get_connection();
 	try {
 		// console.log('wwwwwwwwwwwwwwwwwww')
-		let token_s = '';
-		if (object1.assign_at){
-			token_s = object1.token;
-		}else{
-			token_s = object1;
-		}
+		// let token_s = '';
+		// if (object1.assign_at){
+			// token_s = object1.token;
+		// }else{
+			// token_s = object1;
+		// }
 		
 		var now = new Date();
-		const user = await jwt.verify(token_s, accessTokenSecret);
+		const user = await jwt.verify(object1.token, accessTokenSecret);
 		let brokers = await qb.select(['id','token']).where({roll_id: 2,status:1}).get('users');
 		let result = brokers.map(a => a.token);
 		let result_id = brokers.map(a => '-'+a.id+'-');
-		
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss'),for_broker:result_id.toString()};
 		
 		if (object1.assign_at){
 			object_add.assign_at = object1.assign_at;
+		}
+		if (object1.lat){
+			object_add.latitude = object1.lat;
+		}
+		if (object1.lng){
+			object_add.longitude = object1.lng;
 		}
 		let book_now = await qb.returning('id').insert('book_nows', object_add);
 		notification_s(user.id,result);

@@ -78,7 +78,7 @@ async function customer_reqest(req, res, next){
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
-		let user_id = '-'+user.id+'-';
+		
 		let upcoming = {};
 		if(users[0].status == '1'){
 			upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.status != ':'completed','book_nows.status != ':'rejected','book_nows.status != ':'cancelled'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
@@ -98,8 +98,9 @@ async function broker_reqest(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
-		const upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status','pending').or_where('book_nows.status', 'in_progress').from('book_nows').join('users','users.id=book_nows.broker_id','left').order_by('book_nows.id','desc').get();
-		const completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status','completed').or_where('book_nows.status', 'rejected').or_where('book_nows.status', 'cancelled').from('book_nows').join('users','users.id=book_nows.broker_id').order_by('book_nows.id','desc').get();
+		let user_id = '-'+user.id+'-';
+		const upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.status != ':'completed','book_nows.status != ':'rejected','book_nows.status != ':'cancelled'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.broker_id','left').order_by('book_nows.id','desc').get();
+		const completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.status != ':'pending','book_nows.status != ':'in_progress'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.broker_id').order_by('book_nows.id','desc').get();
 		return res.json(halper.api_response(1,'Broker request',{upcoming:upcoming,completed:completed}));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));

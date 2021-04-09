@@ -25,18 +25,24 @@ async function add_status(object1) {
 		
 		var now = new Date();
 		const user = await jwt.verify(token_s, accessTokenSecret);
-		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss')};
+		let brokers = await qb.select(['id','token']).where({roll_id: 2,status:1}).get('users');
+		let result = brokers.map(a => a.token);
+		let result_id = brokers.map(a => '-'+a.id+'-');
+		
+		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d h:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d h:MM:ss'),for_broker:result_id.toString()};
 		
 		if (object1.assign_at){
 			object_add.assign_at = object1.assign_at;
 		}
 		let book_now = await qb.returning('id').insert('book_nows', object_add);
-		notification_s(user.id);
+		notification_s(user.id,result);
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
 		return {
 			users: users[0],
 			book_now: book_now
 		};
+		
+		// return result_id.toString();
 	} catch (err) {
 		console.log('wwwwwwwwwwwwwwwwwww');
 		console.log(err);
@@ -108,7 +114,7 @@ var notification_change_request = async function (msg,callback) {
 }
 
 
-var notification_s = async function (msg,callback) {
+var notification_s = async function (msg,result,callback) {
 	try {
 		
 		var FCM = require('fcm-node');
@@ -117,10 +123,7 @@ var notification_s = async function (msg,callback) {
 	
 		const qb = await dbs.get_connection();
 		let users = await qb.select(['id','name','email','phone_no','token']).where({id: msg}).get('users');
-		let brokers = await qb.select(['id','token']).where({roll_id: 2,status:1}).get('users');
-		let result = brokers.map(a => a.token);
 		
-		console.log(brokers);
 		
 		let username = (users[0].name) ? users[0].name: "Customer";
 		var message = {

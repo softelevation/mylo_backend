@@ -75,6 +75,7 @@ async function bookReqest(req, res, next){
 
 async function customer_reqest(req, res, next){
 	const qb = await dbs.get_connection();
+	console.log('customercustomercustomercustomer');
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
@@ -96,6 +97,7 @@ async function customer_reqest(req, res, next){
 
 async function broker_reqest(req, res, next){
 	const qb = await dbs.get_connection();
+	console.log('brokerbrokerbrokerbrokerbroker');
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		const upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status','pending').or_where('book_nows.status', 'in_progress').from('book_nows').join('users','users.id=book_nows.broker_id','left').order_by('book_nows.id','desc').get();

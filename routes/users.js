@@ -39,5 +39,7 @@ router.post('/broker-status',apiController.brokerStatus);
 router.get('/log-out',apiController.logOut);
 router.get('/cronjob',apiController.cronjob);
 
+router.get('/admin-booking',apiController.adminBooking);
+
 
 module.exports = router;

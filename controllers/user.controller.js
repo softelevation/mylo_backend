@@ -91,6 +91,7 @@ async function bookReqest(req, res, next){
 async function customer_reqest(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
+		console.log(req.headers.authorization);
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
 		let user_id = '-'+user.id+'-';

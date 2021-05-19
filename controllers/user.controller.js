@@ -91,18 +91,24 @@ async function bookReqest(req, res, next){
 async function customer_reqest(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
-		console.log(req.headers.authorization);
+		let now = new Date();
+		let date_format = dateFormat(now,'yyyy-m-d 00:01:01');
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
 		let user_id = '-'+user.id+'-';
 		let upcoming = {};
-		
 		// AND book_nows.assign_at >= '"+dateFormat(now,'yyyy-m-d H:MM:ss')+"'
-		
 		if(users[0].status == '1'){
-			upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.assign_at >= ':dateFormat(now,'yyyy-m-d H:MM:ss'),'book_nows.status != ':'completed','book_nows.status != ':'rejected','book_nows.status != ':'cancelled'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
+			let up_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` != 'cancelled' AND `book_nows`.`assign_at` >= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
+			// console.log(up_query);
+			upcoming = await qb.query(up_query);
+			// upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.status != ':'completed','book_nows.status != ':'rejected','book_nows.status != ':'cancelled'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
+			// 
 		}else{
-			upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status', 'in_progress').where('book_nows.assign_at >=', dateFormat(now,'yyyy-m-d H:MM:ss')).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
+			let up_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` = 'in_progress' AND `book_nows`.`assign_at` >= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
+			// upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status', 'in_progress').like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
+			// console.log(qb.last_query());
+			upcoming = await qb.query(up_query);
 		}
 		const completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.status != ':'pending','book_nows.status != ':'in_progress'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
 		return res.json(halper.api_response(1,'Customer request',{upcoming:upcoming,completed:completed}));

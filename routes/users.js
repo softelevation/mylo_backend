@@ -37,6 +37,7 @@ router.post('/book-reqest',apiController.bookReqest);
 
 router.post('/broker-status',apiController.brokerStatus);
 router.get('/log-out',apiController.logOut);
+router.get('/cronjob',apiController.cronjob);
 
 
 module.exports = router;

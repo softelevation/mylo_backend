@@ -42,8 +42,23 @@ module.exports = {
 	broker_reqest: broker_reqest,
 	bookReqest: bookReqest,
 	logOut: logOut,
+	cronjob: cronjob,
 	brokerStatus: brokerStatus
 };
+
+async function cronjob(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		// const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		qb.update('users', {token:null}, {id: user.id});
+		return res.json('successfully');
+	} catch (err) {
+		return res.json(false);
+	} finally {
+		qb.disconnect();
+	}
+}
+
 
 async function logOut(req, res, next){
 	const qb = await dbs.get_connection();
@@ -57,7 +72,6 @@ async function logOut(req, res, next){
 		qb.disconnect();
 	}
 }
-
 
 async function bookReqest(req, res, next){
 	const qb = await dbs.get_connection();
@@ -81,10 +95,13 @@ async function customer_reqest(req, res, next){
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
 		let user_id = '-'+user.id+'-';
 		let upcoming = {};
+		
+		// AND book_nows.assign_at >= '"+dateFormat(now,'yyyy-m-d H:MM:ss')+"'
+		
 		if(users[0].status == '1'){
-			upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.status != ':'completed','book_nows.status != ':'rejected','book_nows.status != ':'cancelled'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
+			upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.assign_at >= ':dateFormat(now,'yyyy-m-d H:MM:ss'),'book_nows.status != ':'completed','book_nows.status != ':'rejected','book_nows.status != ':'cancelled'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
 		}else{
-			upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status', 'in_progress').like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
+			upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status', 'in_progress').where('book_nows.assign_at >=', dateFormat(now,'yyyy-m-d H:MM:ss')).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
 		}
 		const completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.status != ':'pending','book_nows.status != ':'in_progress'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
 		return res.json(halper.api_response(1,'Customer request',{upcoming:upcoming,completed:completed}));

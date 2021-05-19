@@ -99,18 +99,22 @@ async function customer_reqest(req, res, next){
 		let upcoming = {};
 		// AND book_nows.assign_at >= '"+dateFormat(now,'yyyy-m-d H:MM:ss')+"'
 		if(users[0].status == '1'){
-			let up_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` != 'cancelled' AND `book_nows`.`assign_at` >= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
+			let up_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` != 'cancelled' AND `book_nows`.`assign_at` >= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
 			// console.log(up_query);
 			upcoming = await qb.query(up_query);
 			// upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.status != ':'completed','book_nows.status != ':'rejected','book_nows.status != ':'cancelled'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
 			// 
 		}else{
-			let up_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` = 'in_progress' AND `book_nows`.`assign_at` >= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
+			let up_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` = 'in_progress' AND `book_nows`.`assign_at` >= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
 			// upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status', 'in_progress').like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
 			// console.log(qb.last_query());
 			upcoming = await qb.query(up_query);
 		}
-		const completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where({'book_nows.status != ':'pending','book_nows.status != ':'in_progress'}).like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
+		
+		let completed_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` != 'in_progress' AND `book_nows`.`assign_at` <= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
+		const completed = await qb.query(completed_query);
+		// console.log(qb.last_query());
+		
 		return res.json(halper.api_response(1,'Customer request',{upcoming:upcoming,completed:completed}));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));

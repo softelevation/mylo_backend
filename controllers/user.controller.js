@@ -41,6 +41,7 @@ module.exports = {
 	customer_reqest: customer_reqest,
 	broker_reqest: broker_reqest,
 	bookReqest: bookReqest,
+	bookingUpdate: bookingUpdate,
 	logOut: logOut,
 	cronjob: cronjob,
 	adminBooking: adminBooking,
@@ -104,6 +105,23 @@ async function bookReqest(req, res, next){
 		qb.update('book_nows', {broker_id: user.id}, {id:input.book_id});
 		const users = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.id',input.book_id).limit(1).from('book_nows').join('users','users.id=book_nows.cus_id').get();
 		return res.json(halper.api_response(1,'booking request successfully',users[0]));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+}
+
+async function bookingUpdate(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		let input = req.body;
+		let assign_at = input.input_date+' '+input.input_time+':00';
+		// console.log(assign_at);
+		// 2021-05-19 10:55:39
+		qb.update('book_nows', {assign_at: assign_at}, {id:input.book_id});
+		// const users = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.id',input.book_id).limit(1).from('book_nows').join('users','users.id=book_nows.cus_id').get();
+		return res.json(halper.api_response(1,'booking update successfully',input));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {

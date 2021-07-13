@@ -34,6 +34,7 @@ router.post('/brokerProfile',apiController.brokerProfile);
 router.get('/customer-reqest',apiController.customer_reqest);
 router.get('/broker-reqest',apiController.broker_reqest);
 router.post('/book-reqest',apiController.bookReqest);
+router.post('/booking-update',apiController.bookingUpdate);
 
 router.post('/broker-status',apiController.brokerStatus);
 router.get('/log-out',apiController.logOut);

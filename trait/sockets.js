@@ -41,6 +41,9 @@ async function add_status(object1) {
 		if (object1.lng){
 			object_add.longitude = object1.lng;
 		}
+		if (object1.lng){
+			object_add.location = object1.location;
+		}
 		let book_now = await qb.returning('id').insert('book_nows', object_add);
 		notification_s(user.id,result);
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');

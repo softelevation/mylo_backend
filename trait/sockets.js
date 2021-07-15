@@ -104,7 +104,8 @@ var notification_change_request = async function (msg,statu_s,callback) {
 		if (statu_s == 'cancelled') {
 			message_s = username + ' has cancelled your request';
     }
-		
+		console.log(message_s);
+		console.log(users[0].token);
 		var message = {
       to: users[0].token,
       notification: {
@@ -118,8 +119,10 @@ var notification_change_request = async function (msg,statu_s,callback) {
     };
 		fcm.send(message, function(err, response){
 			if (err) {
+				console.log(err);
 				// res.status(200).json(halper.api_response(0,'This is invalid request',"Something has gone wrong!"));
 			} else {
+				console.log(response);
 				// res.status(200).json(halper.api_response(1,'Brokers list',response));
 			}
 		});

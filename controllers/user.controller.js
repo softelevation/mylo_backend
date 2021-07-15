@@ -135,7 +135,11 @@ async function customer_reqest(req, res, next){    // for broker app api
 		let now = new Date();
 		let date_format = dateFormat(now,'yyyy-m-d 00:01:01');
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
-		qb.query("UPDATE `book_nows` SET `status`='expired'  WHERE `assign_at` <= '"+date_format+"'");
+		qb.query(
+      "UPDATE `book_nows` SET `status`='expired'  WHERE `assign_at` <= '" +
+        date_format +
+        "' AND `status` = 'pending'",
+    );
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
 		let user_id = '-'+user.id+'-';
 		let upcoming = {};

@@ -79,14 +79,16 @@ async function broker_detail(msg) {
 
 async function change_status(msg) {
 	const user = await jwt.verify(msg.token, accessTokenSecret);
+	msg.broker_id = user.id;
 	if(msg.status == 'in_progress'){
-		msg.broker_id = user.id;
-		notification_change_request(msg);
-	}
+		notification_change_request(msg, 'in_progress');
+	}else if (msg.status == 'cancelled') {
+    notification_change_request(msg, 'cancelled');
+  }
 	apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
 }
 
-var notification_change_request = async function (msg,callback) {
+var notification_change_request = async function (msg,statu_s,callback) {
 	try {
 		var FCM = require('fcm-node');
 		var serverKey = process.env.cus_key;
@@ -98,18 +100,22 @@ var notification_change_request = async function (msg,callback) {
 		let brokers = await qb.select(['name']).where({id: msg.broker_id}).limit(1).get('users');
 		
 		let username = (brokers[0].name) ? brokers[0].name: "Broker";
+		let message_s = username+' has accepted your request';
+		if (statu_s == 'cancelled') {
+			message_s = username + ' has cancelled your request';
+    }
 		
 		var message = {
-			to : users[0].token,
-			notification: {
-				title: 'Booking accepted', 
-				body: username+' has accepted your request',
-			},
-			data: {
-				my_key: 'my value',
-				my_another_key: 'my another value'
-			}
-		}
+      to: users[0].token,
+      notification: {
+        title: 'Booking accepted',
+        body: message_s,
+      },
+      data: {
+        my_key: 'my value',
+        my_another_key: 'my another value',
+      },
+    };
 		fcm.send(message, function(err, response){
 			if (err) {
 				// res.status(200).json(halper.api_response(0,'This is invalid request',"Something has gone wrong!"));

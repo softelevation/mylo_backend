@@ -166,9 +166,10 @@ async function customer_reqest(req, res, next){    // for broker app api
 		let completed_query =
       "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` != 'in_progress' AND `book_nows`.`assign_at` <= '" +
       date_format +
-      "' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
+      "' AND `book_nows`.`for_broker` LIKE '%" +
+      user_id +
+      "%' ORDER BY `book_nows`.`id` DESC";
 		const completed = await qb.query(completed_query);
-		// console.log(qb.last_query());
 		
 		return res.json(halper.api_response(1,'Customer request',{upcoming:upcoming,completed:completed}));
 	} catch (err) {

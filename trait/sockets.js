@@ -122,8 +122,30 @@ async function change_status(msg) {
 	}else if (msg.status == 'cancelled') {
 		notification_change_request(msg, 'cancelled');
 		apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
-  }
+	}else if(msg.status == 'rejected'){
+		remove_broker(msg);
+		return true;
+		// console.log(msg);
+	}
 }
+
+var remove_broker = async function (msg,callback) {
+		// console.log(msg);
+	const qb = await dbs.get_connection();
+	try {
+		let users = await qb.select('*').where('id',msg.id).limit(1).get('book_nows');
+		let for_broker_string = users[0].for_broker.split(",");
+		let index_broker_string = for_broker_string.indexOf('-'+msg.broker_id+'-');
+		for_broker_string.splice(index_broker_string,1);
+		qb.update('book_nows', {for_broker: for_broker_string.toString()}, {id:msg.id});
+		return true;
+	} catch (err) {
+		return false;
+	} finally {
+		qb.disconnect();
+	}
+}
+
 
 var notification_change_request = async function (msg,statu_s,callback) {
 	try {

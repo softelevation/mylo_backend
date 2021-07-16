@@ -45,7 +45,8 @@ module.exports = {
 	logOut: logOut,
 	cronjob: cronjob,
 	adminBooking: adminBooking,
-	brokerStatus: brokerStatus
+	brokerStatus: brokerStatus,
+	testNotification: testNotification
 };
 
 async function adminBooking(req, res, next){
@@ -185,7 +186,7 @@ async function broker_reqest(req, res, next){         // for customer app api
 		var now = new Date();
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		// console.log(user);
-		let up_query = "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '"+user.id+"' AND (book_nows.status = 'in_progress' OR book_nows.status = 'pending') AND book_nows.assign_at >= '"+dateFormat(now,'yyyy-m-d')+"' ORDER BY book_nows.id DESC";
+		let up_query = "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '"+user.id+"' AND (book_nows.status = 'in_progress' OR book_nows.status = 'pending') AND book_nows.assign_at >= '"+dateFormat(now,'yyyy-mm-d')+"' ORDER BY book_nows.id DESC";
 		const upcoming = await qb.query(up_query);
 		// const upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status','pending').or_where('book_nows.status', 'in_progress').from('book_nows').join('users','users.id=book_nows.broker_id','left').order_by('book_nows.id','desc').get();
 		const completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.assign_at','book_nows.location','book_nows.created_at','book_nows.updated_at']).where('book_nows.cus_id',user.id).where_in('book_nows.status',['completed','rejected','cancelled']).from('book_nows').join('users','users.id=book_nows.broker_id').order_by('book_nows.id','desc').get();
@@ -565,6 +566,28 @@ function defaultUrl(req, res, next){
         }
     });
 }
+
+async function testNotification(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		var sockets = require('../trait/sockets');
+		const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
+		sockets.notification_working(users[0].token,users[0].roll_id);
+		// console.log(req.params.id);
+		// users.social_token
+		// let input = req.body;
+		// const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		// let statu_s = (req.body.status && (req.body.status == 1 || req.body.status == 2)) ? req.body.status : 1;
+		// apiModel.update('users', {id:user.id}, {status: statu_s});
+		return res.status(200).json(halper.api_response(1,'input parms',users));
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
+	}
+	
+}
+
 
 async function brokerStatus(req, res, next){
 	const qb = await dbs.get_connection();

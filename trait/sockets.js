@@ -8,8 +8,44 @@ const dateFormat = require("dateformat");
 module.exports = {
 	add_status: add_status,
 	change_status: change_status,
-	broker_detail: broker_detail
+	broker_detail: broker_detail,
+	notification_working: notification_working
 };
+
+
+async function notification_working(token,roll_id) {
+	try {
+		var FCM = require('fcm-node');
+		let serverKey = '';
+		if(roll_id == 1){
+			serverKey = process.env.cus_key;
+		}else{
+			serverKey = process.env.broker_key;
+		}
+		var fcm = new FCM(serverKey);
+		let username = 'hello notification is working';
+		var message = {
+			to: token,
+			notification: {
+				title: 'New booking', 
+				body: username,
+			},
+			data: {
+				my_key: 'my value',
+				my_another_key: 'my another value'
+			}
+		}
+		fcm.send(message, function(err, response){
+			if (err) {
+				console.log('errror');
+			} else {
+				console.log(response);
+			}
+		});
+	} catch (err) {
+	}
+	
+}
 
 
 async function add_status(object1) {

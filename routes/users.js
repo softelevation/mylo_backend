@@ -41,6 +41,7 @@ router.get('/log-out',apiController.logOut);
 router.get('/cronjob',apiController.cronjob);
 
 router.get('/admin-booking',apiController.adminBooking);
+router.get('/test-notification/:id',apiController.testNotification);
 
 
 module.exports = router;

@@ -344,6 +344,7 @@ async function verifyOtp(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		let inputRequest = req.body;
+		let sockets = require('../trait/sockets');
 		if(inputRequest.social_type === 'N'){
 			qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', (err, response) => {
 					if(response.length > 0){
@@ -351,6 +352,7 @@ async function verifyOtp(req, res, next){
 						if(inputRequest.otp !== '123456'){
 							qb.select('otp').where({user_id: response[0].id,otp: inputRequest.otp}).get('otps', (err, otp_s) => {
 								if(otp_s.length > 0){
+									sockets.notification_working(inputRequest.token,response[0].roll_id);
 									const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].role_id }, accessTokenSecret);
 									inputRequest.accessToken = accessToken;
 									inputRequest.roll_id = response[0].role_id;

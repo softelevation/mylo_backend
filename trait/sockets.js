@@ -16,12 +16,12 @@ module.exports = {
 async function notification_working(token,roll_id) {
 	try {
 		var FCM = require('fcm-node');
-		let serverKey = '';
-		if(roll_id == 1){
-			serverKey = process.env.cus_key;
-		}else{
-			serverKey = process.env.broker_key;
-		}
+		let serverKey = process.env.cus_key;
+		// if(roll_id == 1){
+			// serverKey = process.env.cus_key;
+		// }else{
+			// serverKey = process.env.broker_key;
+		// }
 		var fcm = new FCM(serverKey);
 		let username = 'hello notification is working';
 		var message = {
@@ -118,10 +118,11 @@ async function change_status(msg) {
 	msg.broker_id = user.id;
 	if(msg.status == 'in_progress'){
 		notification_change_request(msg, 'in_progress');
+		apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
 	}else if (msg.status == 'cancelled') {
-    notification_change_request(msg, 'cancelled');
+		notification_change_request(msg, 'cancelled');
+		apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
   }
-	apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
 }
 
 var notification_change_request = async function (msg,statu_s,callback) {
@@ -173,7 +174,7 @@ var notification_s = async function (msg,result,callback) {
 	try {
 		
 		var FCM = require('fcm-node');
-		var serverKey = process.env.broker_key;
+		let serverKey = process.env.cus_key;
 		var fcm = new FCM(serverKey);
 	
 		const qb = await dbs.get_connection();

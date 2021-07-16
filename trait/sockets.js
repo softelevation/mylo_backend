@@ -23,11 +23,11 @@ async function notification_working(token,roll_id) {
 			// serverKey = process.env.broker_key;
 		// }
 		var fcm = new FCM(serverKey);
-		let username = 'hello notification is working';
+		let username = '';
 		var message = {
 			to: token,
 			notification: {
-				title: 'New booking', 
+				title: 'Welcome to Mylo Pro', 
 				body: username,
 			},
 			data: {

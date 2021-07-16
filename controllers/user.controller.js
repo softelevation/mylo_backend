@@ -352,7 +352,6 @@ async function verifyOtp(req, res, next){
 						if(inputRequest.otp !== '123456'){
 							qb.select('otp').where({user_id: response[0].id,otp: inputRequest.otp}).get('otps', (err, otp_s) => {
 								if(otp_s.length > 0){
-									sockets.notification_working(inputRequest.token,response[0].roll_id);
 									const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].role_id }, accessTokenSecret);
 									inputRequest.accessToken = accessToken;
 									inputRequest.roll_id = response[0].role_id;
@@ -363,6 +362,7 @@ async function verifyOtp(req, res, next){
 								}
 							});
 						}else{
+									sockets.notification_working(inputRequest.token,response[0].roll_id);
 									const accessToken = jwt.sign({ id: response[0].id, role_id: response[0].role_id }, accessTokenSecret);
 									inputRequest.accessToken = accessToken;
 									inputRequest.roll_id = response[0].role_id;

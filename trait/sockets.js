@@ -61,7 +61,7 @@ async function add_status(object1) {
 		let result = brokers.map(a => a.token);
 		let result_id = brokers.map(a => '-'+a.id+'-');
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d H:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d H:MM:ss'),for_broker:result_id.toString()};
-		
+		console.log(object1);
 		if (object1.assign_at){
 			object_add.assign_at = convertGMT(object1.assign_at);
 		}else{

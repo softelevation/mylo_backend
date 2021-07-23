@@ -148,6 +148,7 @@ async function customer_reqest(req, res, next){    // for broker app api
 	apiModel.save_api_name('customer_reqest');
 	const qb = await dbs.get_connection();
 	try {
+		console.log(req.headers);
 		let now = new Date();
 		let date_format = dateFormat(now,'yyyy-mm-d 00:01:01');
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);

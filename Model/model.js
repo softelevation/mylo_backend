@@ -2,12 +2,19 @@ var db = require('../db');
 
 
 module.exports = {
-	insert: insert,
-	update: update,
-	select: select,
-	insertQuery: insertQuery,
-	updateOrCreate:updateOrCreate
+  insert: insert,
+  update: update,
+  select: select,
+  insertQuery: insertQuery,
+  save_api_name: save_api_name,
+  updateOrCreate: updateOrCreate,
 };
+
+
+function save_api_name(input) {
+  insert('api_requests', { name: input });
+  return true;
+}
 
 function updateOrCreate(table, obj,where = null) {
 	var sql = 'SELECT * FROM `'+table+'`';

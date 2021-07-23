@@ -51,6 +51,7 @@ module.exports = {
 
 async function adminBooking(req, res, next){
 	const qb = await dbs.get_connection();
+	apiModel.save_api_name('adminBooking');
 	try {
 		// qb.update('book_nows', {broker_id: user.id}, {id:input.book_id});
 		let now = new Date();
@@ -72,6 +73,7 @@ async function adminBooking(req, res, next){
 }
 
 async function cronjob(req, res, next){
+	apiModel.save_api_name('cronjob');
 	const qb = await dbs.get_connection();
 	try {
 		// const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -86,6 +88,7 @@ async function cronjob(req, res, next){
 
 
 async function logOut(req, res, next){
+	apiModel.save_api_name('logOut');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -99,6 +102,7 @@ async function logOut(req, res, next){
 }
 
 async function bookReqest(req, res, next){
+	apiModel.save_api_name('bookReqest');
 	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
@@ -114,6 +118,7 @@ async function bookReqest(req, res, next){
 }
 
 async function bookingUpdate(req, res, next){
+	apiModel.save_api_name('bookingUpdate');
 	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
@@ -130,7 +135,17 @@ async function bookingUpdate(req, res, next){
 	}
 }
 
+
+
+
+var convertTZ = function (date, tzString) {
+	let date_time = new Date(date).toLocaleString('en-US', { timeZone: tzString });
+  return dateFormat(date_time, 'yyyy-mm-d H:MM:ss');
+};
+// console.log(convertTZ(upcoming[0].created_at, 'Asia/Kolkata'));
+
 async function customer_reqest(req, res, next){    // for broker app api
+	apiModel.save_api_name('customer_reqest');
 	const qb = await dbs.get_connection();
 	try {
 		let now = new Date();
@@ -144,6 +159,7 @@ async function customer_reqest(req, res, next){    // for broker app api
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
 		let user_id = '-'+user.id+'-';
 		let upcoming = {};
+		let completed = {};
 		if(users[0].status == '1'){
 			let up_query =
         "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`assign_at` AS `created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`assign_at` >= '" +
@@ -163,6 +179,15 @@ async function customer_reqest(req, res, next){    // for broker app api
         "' ORDER BY `book_nows`.`id` DESC";
 			upcoming = await qb.query(up_query);
 		}
+		if (req.headers.time_zone) {
+      upcoming = upcoming.map(function (response) {
+				response.created_at = convertTZ(
+          response.created_at,
+          req.headers.time_zone,
+        );
+        return response;
+      });
+    }
 		
 		let completed_query =
       "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` != 'in_progress' AND `book_nows`.`assign_at` <= '" +
@@ -170,7 +195,18 @@ async function customer_reqest(req, res, next){    // for broker app api
       "' AND `book_nows`.`for_broker` LIKE '%" +
       user_id +
       "%' ORDER BY `book_nows`.`id` DESC";
-		const completed = await qb.query(completed_query);
+		completed = await qb.query(completed_query);
+
+		if (req.headers.time_zone) {
+      completed = completed.map(function (response) {
+        response.created_at = convertTZ(
+          response.created_at,
+          req.headers.time_zone,
+        );
+        return response;
+      });
+    }
+
 		
 		return res.json(halper.api_response(1,'Customer request',{upcoming:upcoming,completed:completed}));
 	} catch (err) {
@@ -181,6 +217,7 @@ async function customer_reqest(req, res, next){    // for broker app api
 }
 
 async function broker_reqest(req, res, next){         // for customer app api
+	apiModel.save_api_name('broker_reqest');
 	const qb = await dbs.get_connection();
 	try {
 		var now = new Date();
@@ -200,6 +237,7 @@ async function broker_reqest(req, res, next){         // for customer app api
 }
 
 async function brokerProfile(req, res, next){
+	apiModel.save_api_name('brokerProfile');
 	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
@@ -214,6 +252,7 @@ async function brokerProfile(req, res, next){
 }
 
 async function postUsersUpdate(req, res, next){
+	apiModel.save_api_name('postUsersUpdate');
 	try {
 		
 		upload(req, res, function(err) {
@@ -233,6 +272,7 @@ async function postUsersUpdate(req, res, next){
 }
 
 async function deleteData(req, res, next){
+	apiModel.save_api_name('deleteData');
 	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
@@ -247,6 +287,7 @@ async function deleteData(req, res, next){
 
 
 async function dashboard(req, res, next){
+	apiModel.save_api_name('dashboard');
 	const qb = await dbs.get_connection();
 	try {
 		let users = await qb.select('id').where('roll_id', 1).get('users');
@@ -262,6 +303,7 @@ async function dashboard(req, res, next){
 
 
 async function profileById(req, res, next){
+	apiModel.save_api_name('profileById');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -276,6 +318,7 @@ async function profileById(req, res, next){
 }
 
 async function profile(req, res, next){
+	apiModel.save_api_name('profile');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -289,6 +332,7 @@ async function profile(req, res, next){
 }
 
 async function profilePost(req, res, next){
+	apiModel.save_api_name('profilePost');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -310,6 +354,7 @@ async function profilePost(req, res, next){
 
 
 async function formprofilePost(req, res, next){
+	apiModel.save_api_name('formprofilePost');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -341,6 +386,7 @@ async function formprofilePost(req, res, next){
 
 
 async function verifyOtp(req, res, next){
+	apiModel.save_api_name('verifyOtp');
 	const qb = await dbs.get_connection();
 	try {
 		let inputRequest = req.body;
@@ -411,6 +457,7 @@ async function verifyOtp(req, res, next){
 
 
 async function registered(req, res, next){
+	apiModel.save_api_name('registered');
 	const qb = await dbs.get_connection();
 	try {
 		let inputRequest = req.body;
@@ -449,6 +496,7 @@ function encrypt(req, res, next){
 }
 
 function loginUser(req, res, next){
+	apiModel.save_api_name('loginUser');
 	var sql = "SELECT * FROM `users` WHERE `email` = '"+req.body.email+"' AND `password` = '"+halper.encrypt(req.body.password,'in')+"'";
 	db.query(sql, function(err, rows, fields) {
 		if (err) {
@@ -464,6 +512,7 @@ function loginUser(req, res, next){
 }
 
 async function postUsers(req, res, next){
+	apiModel.save_api_name('postUsers');
 	const qb = await dbs.get_connection();
 	try {
 		let inputData = req.body;
@@ -480,6 +529,7 @@ async function postUsers(req, res, next){
 
 
 async function allUsers(req, res, next){
+	apiModel.save_api_name('allUsers');
 	const qb = await dbs.get_connection();
 	try {
 		qb.select('*').where({roll_id: 1}).order_by('id', 'desc').limit(10).get('users', async (err, response) => {
@@ -497,6 +547,7 @@ async function allUsers(req, res, next){
 }
 
 async function allUsersList(req, res, next){
+	apiModel.save_api_name('allUsersList');
 	const qb = await dbs.get_connection();
 	try {
 		let inputData = req.body.limit_to;
@@ -513,6 +564,7 @@ async function allUsersList(req, res, next){
 }
 
 async function allbroker_list(req, res, next){
+	apiModel.save_api_name('allbroker_list');
 	const qb = await dbs.get_connection();
 	try {
 		let inputData = req.body.limit_to;
@@ -530,6 +582,7 @@ async function allbroker_list(req, res, next){
 
 
 async function allBrokers(req, res, next){
+	apiModel.save_api_name('allBrokers');
 	const qb = await dbs.get_connection();
 	try {
 		let inputData = req.body;
@@ -592,6 +645,7 @@ async function testNotification(req, res, next){
 
 
 async function brokerStatus(req, res, next){
+	apiModel.save_api_name('brokerStatus');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);

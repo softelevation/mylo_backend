@@ -47,18 +47,14 @@ async function notification_working(token,roll_id) {
 	
 }
 
+var convertGMT = function (date) {
+  let date_time = new Date(date).toLocaleString('en-US', { timeZone: 'GMT' });
+  return dateFormat(date_time, 'yyyy-mm-d H:MM:ss');
+};
 
 async function add_status(object1) {
 	const qb = await dbs.get_connection();
 	try {
-		// console.log('wwwwwwwwwwwwwwwwwww')
-		// let token_s = '';
-		// if (object1.assign_at){
-			// token_s = object1.token;
-		// }else{
-			// token_s = object1;
-		// }
-		
 		var now = new Date();
 		const user = await jwt.verify(object1.token, accessTokenSecret);
 		let brokers = await qb.select(['id','token']).where({roll_id: 2,status:1}).get('users');
@@ -67,7 +63,7 @@ async function add_status(object1) {
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d H:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d H:MM:ss'),for_broker:result_id.toString()};
 		
 		if (object1.assign_at){
-			object_add.assign_at = object1.assign_at;
+			object_add.assign_at = convertGMT(object1.assign_at);
 		}else{
 			object_add.assign_at = dateFormat(now,'yyyy-m-d H:MM:ss');
 		}

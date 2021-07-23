@@ -464,7 +464,11 @@ async function registered(req, res, next){
 		var otp = Math.floor(100000 + Math.random() * 900000);
 		qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', async (err, response) => {
 			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
-			
+
+			let otp_message = `${otp} is your OTP for verification from BullsFortune. Please do not share your OTP with anyone.`;
+			if (inputRequest.phone_no.indexOf('+') !== -1) {
+        halper.sand_sms(inputRequest.phone_no, otp_message);
+      }
 			if(response.length > 0){
 				apiModel.updateOrCreate('otps', {user_id:response[0].id,otp: otp}, {user_id:response[0].id});
 				inputRequest.otp = otp;
@@ -623,22 +627,28 @@ function defaultUrl(req, res, next){
 }
 
 async function testNotification(req, res, next){
-	const qb = await dbs.get_connection();
+	// const qb = await dbs.get_connection();
 	try {
-		var sockets = require('../trait/sockets');
-		const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
-		sockets.notification_working(users[0].token,users[0].roll_id);
+		
+		let input = {}
+		// var sockets = require('../trait/sockets');
+		// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
+		// sockets.notification_working(users[0].token,users[0].roll_id);
 		// console.log(req.params.id);
+		// let otp = 123;
+		// let text_message = `Your otp is ${otp}`;
+		// console.log(text_message);
+		
 		// users.social_token
 		// let input = req.body;
 		// const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		// let statu_s = (req.body.status && (req.body.status == 1 || req.body.status == 2)) ? req.body.status : 1;
 		// apiModel.update('users', {id:user.id}, {status: statu_s});
-		return res.status(200).json(halper.api_response(1,'input parms',users));
+		return res.status(200).json(halper.api_response(1,'input parms',input));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
-		qb.disconnect();
+		// qb.disconnect();
 	}
 	
 }

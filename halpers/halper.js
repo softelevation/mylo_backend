@@ -2,8 +2,6 @@ var crypto = require('crypto');
 var algorithm = 'aes256';
 var key = 'password';
 
-
-
 class halper {
 
 	get_role_id(input){
@@ -44,6 +42,19 @@ class halper {
 	empty_array(obj){
 		   let result =  Object.entries(obj).reduce((a,[k,v]) => (v == '' ? a : (a[k]=v, a)), {});
 		   return result;
+	}
+
+	async sand_sms(mobile,text_message){
+			let plivo = require('plivo');
+      let client = new plivo.Client(
+        'MAMTG5ZWJLMME5NJFMYM',
+        'MGE1NWQ2YjEyYmY2MGFkZWRhZTA1NTNiZGY1M2Ix',
+      );
+      client.messages
+        .create('+1 954-231-6797', mobile, text_message)
+        .then(function (response) {
+          console.log(response);
+        });
 	}
 
 }

@@ -92,11 +92,22 @@ async function userNotification(req, res, next) {
   const qb = await dbs.get_connection();
   try {
     const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		// console.log(user);
 		const customer_id = await qb.select('roll_id').where('id', user.id).from('users').get();
 		let notification = {};
 		if (customer_id[0].roll_id == '1') {
 			notification = await qb
-        .select('*')
+        .select([
+          'id',
+					'booking_id',
+          'cus_id',
+          'message',
+          'cus_badge',
+          'brok_badge',
+          'notification_for',
+					'status',
+          'created_at',
+        ])
         .where('cus_id', user.id)
         .where('cus_badge', '1')
         .where('notification_for', '1')
@@ -104,7 +115,17 @@ async function userNotification(req, res, next) {
         .get();
     }else{
 			notification = await qb
-        .select('*')
+        .select([
+          'id',
+          'booking_id',
+          'cus_id',
+          'message',
+          'cus_badge',
+          'brok_badge',
+          'notification_for',
+          'status',
+          'created_at',
+        ])
         .where('broker_id', user.id)
         .where('brok_badge', '2')
         .where('notification_for', '2')
@@ -668,7 +689,11 @@ async function testNotification(req, res, next){
 		let input = {}
 		// var sockets = require('../trait/sockets');
 		// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
-		// sockets.notification_working(users[0].token,users[0].roll_id);
+		// sockets.notification_badge({
+    //   token:
+    //     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMyLCJpYXQiOjE2MjczNjgwMTN9.zvRvLOBfgqhh0td1636tXn4-4dX7vnrVIn51O4GHYUs',
+    //   id: 2,
+    // });
 		// console.log(req.params.id);
 		// let otp = 123;
 		// let text_message = `Your otp is ${otp}`;

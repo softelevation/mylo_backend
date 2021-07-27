@@ -28,6 +28,11 @@ io.on('connection', (socket) => {
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
 		io.emit('customer_details',{messages:'New booking recived',type:0,customer_detail:uuuuuuuuq.users,booking_id:uuuuuuuuq.book_now.insert_id});
 	});
+
+  socket.on('notification_badge', async (msg) => {
+    await sockets.notification_badge(msg);
+    io.emit('refresh_feed', { status: 1, type: 'notification' });
+  });
 	
 	socket.on('request', async (msg) => {
 		sockets.change_status(msg);

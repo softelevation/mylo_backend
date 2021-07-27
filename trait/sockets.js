@@ -9,6 +9,7 @@ module.exports = {
 	add_status: add_status,
 	change_status: change_status,
 	broker_detail: broker_detail,
+	notification_badge: notification_badge,
 	notification_working: notification_working
 };
 
@@ -47,6 +48,24 @@ async function notification_working(token,roll_id) {
 	
 }
 
+
+async function notification_badge(msg) {
+		const qb = await dbs.get_connection();
+		try {
+			const user = await jwt.verify(msg.token, accessTokenSecret);
+			let users = await qb.select('roll_id').where('id', user.id).get('users');
+			if (users[0].roll_id == '1') {
+				apiModel.update('notifications',{ id: msg.id },{ cus_badge: 0 });
+      }else{
+				apiModel.update('notifications', { id: msg.id }, { brok_badge: 0 });
+			}
+    } catch (err) {
+      console.log(err);
+    } finally {
+      qb.disconnect();
+    }
+}
+
 var convertGMT = function (date) {
   let date_time = new Date(date).toLocaleString('en-US', { timeZone: 'GMT' });
   return dateFormat(date_time, 'yyyy-mm-d H:MM:ss');
@@ -77,15 +96,17 @@ async function add_status(object1) {
 		if (object1.lng){
 			object_add.location = object1.location;
 		}
+		let book_now = await qb.returning('id').insert('book_nows', object_add);
 		qb.insert('notifications', {
+      booking_id: book_now.insert_id,
       cus_id: user.id,
       broker_id: result_id.toString(),
       message: `${customer[0].name} have a new mission request`,
       cus_badge: 0,
       brok_badge: 1,
-      notification_for: 2
+      notification_for: 2,
+      status: 'accepted'
     });
-		let book_now = await qb.returning('id').insert('book_nows', object_add);
 		notification_s(user.id,result);
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
 		return {
@@ -176,14 +197,16 @@ var notification_change_request = async function (msg,statu_s,callback) {
 			message_s = username + ' has cancelled your request';
     }
 		qb.insert('notifications', {
+      booking_id: msg.id,
       cus_id: users[0].id,
       broker_id: msg.broker_id,
       message: message_s,
       cus_badge: 1,
       brok_badge: 0,
       notification_for: 1,
+      status: statu_s,
     });
-		console.log(message_s);
+		// console.log(message_s);
 		console.log(users[0].token);
 		var message = {
       to: users[0].token,

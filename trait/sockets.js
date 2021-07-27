@@ -55,9 +55,17 @@ async function notification_badge(msg) {
 			const user = await jwt.verify(msg.token, accessTokenSecret);
 			let users = await qb.select('roll_id').where('id', user.id).get('users');
 			if (users[0].roll_id == '1') {
-				apiModel.update('notifications',{ id: msg.id },{ cus_badge: 0 });
+				if (msg.id != 'all'){
+						apiModel.update('notifications', { id: msg.id }, { cus_badge: 0 });
+				}else{
+						apiModel.update('notifications', { cus_id: user.id }, { cus_badge: 0 });
+				}
       }else{
-				apiModel.update('notifications', { id: msg.id }, { brok_badge: 0 });
+				if (msg.id != 'all'){
+						apiModel.update('notifications', { id: msg.id }, { brok_badge: 0 });
+				}else{
+						apiModel.update('notifications', { broker_id: user.id }, { brok_badge: 0 });
+				}
 			}
     } catch (err) {
       console.log(err);
@@ -175,28 +183,31 @@ var remove_broker = async function (msg,callback) {
 
 
 var notification_change_request = async function (msg,statu_s,callback) {
+	const qb = await dbs.get_connection();
 	try {
-		var FCM = require('fcm-node');
-		var serverKey = process.env.cus_key;
-		var fcm = new FCM(serverKey);
-	
-		const qb = await dbs.get_connection();
-		const users = await qb
+    var FCM = require('fcm-node');
+    var serverKey = process.env.cus_key;
+    var fcm = new FCM(serverKey);
+    const users = await qb
       .select(['users.id', 'users.name', 'users.token'])
       .where('book_nows.id', msg.id)
       .limit(1)
       .from('book_nows')
       .join('users', 'users.id=book_nows.cus_id')
       .get();
-		
-		let brokers = await qb.select(['name']).where({id: msg.broker_id}).limit(1).get('users');
-		
-		let username = (brokers[0].name) ? brokers[0].name: "Broker";
-		let message_s = username+' has accepted your request';
-		if (statu_s == 'cancelled') {
-			message_s = username + ' has cancelled your request';
+
+    let brokers = await qb
+      .select(['name'])
+      .where({ id: msg.broker_id })
+      .limit(1)
+      .get('users');
+
+    let username = brokers[0].name ? brokers[0].name : 'Broker';
+    let message_s = username + ' has accepted your request';
+    if (statu_s == 'cancelled') {
+      message_s = username + ' has cancelled your request';
     }
-		qb.insert('notifications', {
+    qb.insert('notifications', {
       booking_id: msg.id,
       cus_id: users[0].id,
       broker_id: msg.broker_id,
@@ -206,9 +217,9 @@ var notification_change_request = async function (msg,statu_s,callback) {
       notification_for: 1,
       status: statu_s,
     });
-		// console.log(message_s);
-		console.log(users[0].token);
-		var message = {
+    // console.log(message_s);
+    console.log(users[0].token);
+    var message = {
       to: users[0].token,
       notification: {
         title: 'Booking accepted',
@@ -219,19 +230,21 @@ var notification_change_request = async function (msg,statu_s,callback) {
         my_another_key: 'my another value',
       },
     };
-		fcm.send(message, function(err, response){
-			if (err) {
-				console.log(err);
-				// res.status(200).json(halper.api_response(0,'This is invalid request',"Something has gone wrong!"));
-			} else {
-				console.log(response);
-				// res.status(200).json(halper.api_response(1,'Brokers list',response));
-			}
-		});
-		// return 'qqqqqqqqqqqqqq';
-	} catch (err) {
-		// return 'xxxxxxxxx';
-	}
+    fcm.send(message, function (err, response) {
+      if (err) {
+        console.log(err);
+        // res.status(200).json(halper.api_response(0,'This is invalid request',"Something has gone wrong!"));
+      } else {
+        console.log(response);
+        // res.status(200).json(halper.api_response(1,'Brokers list',response));
+      }
+    });
+    // return 'qqqqqqqqqqqqqq';
+  } catch (err) {
+    return false;
+  } finally {
+    qb.disconnect();
+  }
 }
 
 
@@ -270,5 +283,7 @@ var notification_s = async function (msg,result,callback) {
 		// return 'qqqqqqqqqqqqqq';
 	} catch (err) {
 		// return 'xxxxxxxxx';
-	}
+	} finally {
+    qb.disconnect();
+  }
 }

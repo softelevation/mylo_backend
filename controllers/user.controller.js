@@ -52,7 +52,6 @@ module.exports = {
 
 async function adminBooking(req, res, next){
 	const qb = await dbs.get_connection();
-	apiModel.save_api_name('adminBooking');
 	try {
 		// qb.update('book_nows', {broker_id: user.id}, {id:input.book_id});
 		let now = new Date();
@@ -60,7 +59,6 @@ async function adminBooking(req, res, next){
 		let up_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` = 'pending' AND `book_nows`.`assign_at` >= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
 			// console.log(up_query);
 		let upcoming = await qb.query(up_query);
-		
 		// upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status', 'in_progress').like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
 		
 		// const users = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.id',input.book_id).limit(1).from('book_nows').join('users','users.id=book_nows.cus_id').get();
@@ -69,12 +67,12 @@ async function adminBooking(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('adminBooking');
 		qb.disconnect();
 	}
 }
 
 async function cronjob(req, res, next){
-	apiModel.save_api_name('cronjob');
 	const qb = await dbs.get_connection();
 	try {
 		// const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -83,12 +81,12 @@ async function cronjob(req, res, next){
 	} catch (err) {
 		return res.json(false);
 	} finally {
+		apiModel.save_api_name('cronjob');
 		qb.disconnect();
 	}
 }
 
 async function userNotification(req, res, next) {
-  apiModel.save_api_name('userNotification');
   const qb = await dbs.get_connection();
   try {
     const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -138,13 +136,13 @@ async function userNotification(req, res, next) {
   } catch (err) {
     return res.json(halper.api_response(0, 'This is invalid request', {}));
   } finally {
+		apiModel.save_api_name('userNotification');
     qb.disconnect();
   }
 }
 
 
 async function logOut(req, res, next){
-	apiModel.save_api_name('logOut');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -153,12 +151,12 @@ async function logOut(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('logOut');
 		qb.disconnect();
 	}
 }
 
 async function bookReqest(req, res, next){
-	apiModel.save_api_name('bookReqest');
 	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
@@ -169,12 +167,12 @@ async function bookReqest(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('bookReqest');
 		qb.disconnect();
 	}
 }
 
 async function bookingUpdate(req, res, next){
-	apiModel.save_api_name('bookingUpdate');
 	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
@@ -187,6 +185,7 @@ async function bookingUpdate(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('bookingUpdate');
 		qb.disconnect();
 	}
 }
@@ -201,7 +200,6 @@ var convertTZ = function (date, tzString) {
 // console.log(convertTZ(upcoming[0].created_at, 'Asia/Kolkata'));
 
 async function customer_reqest(req, res, next){    // for broker app api
-	apiModel.save_api_name('customer_reqest');
 	const qb = await dbs.get_connection();
 	try {
 		let now = new Date();
@@ -252,7 +250,6 @@ async function customer_reqest(req, res, next){    // for broker app api
       user_id +
       "%' ORDER BY `book_nows`.`id` DESC";
 		completed = await qb.query(completed_query);
-
 		if (req.headers.time_zone) {
       completed = completed.map(function (response) {
         response.created_at = convertTZ(
@@ -268,12 +265,12 @@ async function customer_reqest(req, res, next){    // for broker app api
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('customer_reqest');
 		qb.disconnect();
 	}
 }
 
 async function broker_reqest(req, res, next){         // for customer app api
-	apiModel.save_api_name('broker_reqest');
 	const qb = await dbs.get_connection();
 	try {
 		var now = new Date();
@@ -288,29 +285,27 @@ async function broker_reqest(req, res, next){         // for customer app api
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('broker_reqest');
 		qb.disconnect();
 	}
 }
 
 async function brokerProfile(req, res, next){
-	apiModel.save_api_name('brokerProfile');
 	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
-		
 		let users = await qb.select('*').where('id',input.id).limit(1).get('users');
 		return res.json(halper.api_response(1,'broker profile',users[0]));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('brokerProfile');
 		qb.disconnect();
 	}
 }
 
 async function postUsersUpdate(req, res, next){
-	apiModel.save_api_name('postUsersUpdate');
 	try {
-		
 		upload(req, res, function(err) {
 			let inputData = req.body;
 			if (err) {
@@ -319,6 +314,7 @@ async function postUsersUpdate(req, res, next){
 			if(req.file){
 				inputData.image = 'images/'+req.file.filename;
 			}
+			apiModel.save_api_name('postUsersUpdate');
 			apiModel.update('users', {id:req.params.id}, inputData);
 			return res.json(halper.api_response(1,'Profile update successfully',inputData));
 		});
@@ -328,7 +324,6 @@ async function postUsersUpdate(req, res, next){
 }
 
 async function deleteData(req, res, next){
-	apiModel.save_api_name('deleteData');
 	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
@@ -337,29 +332,28 @@ async function deleteData(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('deleteData');
 		qb.disconnect();
 	}
 }
 
 
 async function dashboard(req, res, next){
-	apiModel.save_api_name('dashboard');
 	const qb = await dbs.get_connection();
 	try {
 		let users = await qb.select('id').where('roll_id', 1).get('users');
 		let brokes = await qb.select('id').where('roll_id', 2).get('users');
-		qb.disconnect();
 		return res.json(halper.api_response(1,'Dashboard',{customers:users.length,brokes:brokes.length}));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('dashboard');
 		qb.disconnect();
 	}
 }
 
 
 async function profileById(req, res, next){
-	apiModel.save_api_name('profileById');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -369,12 +363,12 @@ async function profileById(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('profileById');
 		qb.disconnect();
 	}
 }
 
 async function profile(req, res, next){
-	apiModel.save_api_name('profile');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -383,12 +377,12 @@ async function profile(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('profile');
 		qb.disconnect();
 	}
 }
 
 async function profilePost(req, res, next){
-	apiModel.save_api_name('profilePost');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -404,13 +398,13 @@ async function profilePost(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));
 	} finally {
+		apiModel.save_api_name('profilePost');
 		qb.disconnect();
 	}
 }
 
 
 async function formprofilePost(req, res, next){
-	apiModel.save_api_name('formprofilePost');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -432,6 +426,7 @@ async function formprofilePost(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));
 	} finally {
+		apiModel.save_api_name('formprofilePost');
 		qb.disconnect();
 	}
 }
@@ -442,7 +437,6 @@ async function formprofilePost(req, res, next){
 
 
 async function verifyOtp(req, res, next){
-	apiModel.save_api_name('verifyOtp');
 	const qb = await dbs.get_connection();
 	try {
 		let inputRequest = req.body;
@@ -507,13 +501,13 @@ async function verifyOtp(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));
 	} finally {
+		apiModel.save_api_name('verifyOtp');
 		qb.disconnect();
 	}
 }
 
 
 async function registered(req, res, next){
-	apiModel.save_api_name('registered');
 	const qb = await dbs.get_connection();
 	try {
 		let inputRequest = req.body;
@@ -546,6 +540,7 @@ async function registered(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',err));
 	} finally {
+		apiModel.save_api_name('registered');
 		qb.disconnect();
 	}
 }
@@ -556,9 +551,9 @@ function encrypt(req, res, next){
 }
 
 function loginUser(req, res, next){
-	apiModel.save_api_name('loginUser');
 	var sql = "SELECT * FROM `users` WHERE `email` = '"+req.body.email+"' AND `password` = '"+halper.encrypt(req.body.password,'in')+"'";
 	db.query(sql, function(err, rows, fields) {
+		apiModel.save_api_name('loginUser');
 		if (err) {
 		  res.status(500).json({ error: 'Something failed!' })
 		}else {
@@ -572,7 +567,6 @@ function loginUser(req, res, next){
 }
 
 async function postUsers(req, res, next){
-	apiModel.save_api_name('postUsers');
 	const qb = await dbs.get_connection();
 	try {
 		let inputData = req.body;
@@ -583,13 +577,13 @@ async function postUsers(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('postUsers');
 		qb.disconnect();
 	}
 }
 
 
 async function allUsers(req, res, next){
-	apiModel.save_api_name('allUsers');
 	const qb = await dbs.get_connection();
 	try {
 		qb.select('*').where({roll_id: 1}).order_by('id', 'desc').limit(10).get('users', async (err, response) => {
@@ -602,12 +596,12 @@ async function allUsers(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('allUsers');
 		qb.disconnect();
 	}
 }
 
 async function allUsersList(req, res, next){
-	apiModel.save_api_name('allUsersList');
 	const qb = await dbs.get_connection();
 	try {
 		let inputData = req.body.limit_to;
@@ -619,12 +613,12 @@ async function allUsersList(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('allUsersList');
 		qb.disconnect();
 	}
 }
 
 async function allbroker_list(req, res, next){
-	apiModel.save_api_name('allbroker_list');
 	const qb = await dbs.get_connection();
 	try {
 		let inputData = req.body.limit_to;
@@ -636,14 +630,14 @@ async function allbroker_list(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('allbroker_list');
 		qb.disconnect();
 	}
 }
 
 
 async function allBrokers(req, res, next){
-	apiModel.save_api_name('allBrokers');
-	const qb = await dbs.get_connection();
+	// const qb = await dbs.get_connection();
 	try {
 		let inputData = req.body;
 		BrokerTrait.getAvailableBroker(inputData).then(function(rows){
@@ -652,7 +646,8 @@ async function allBrokers(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
-		qb.disconnect();
+		apiModel.save_api_name('allBrokers');
+		// qb.disconnect();
 	}
 }
 
@@ -715,7 +710,6 @@ async function testNotification(req, res, next){
 
 
 async function brokerStatus(req, res, next){
-	apiModel.save_api_name('brokerStatus');
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
@@ -725,6 +719,7 @@ async function brokerStatus(req, res, next){
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
+		apiModel.save_api_name('brokerStatus');
 		qb.disconnect();
 	}
 	

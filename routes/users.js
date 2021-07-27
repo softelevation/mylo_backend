@@ -30,6 +30,8 @@ router.post('/form-profile',apiController.formprofilePost);
 
 router.post('/delete-data',apiController.deleteData);
 
+router.get('/notification', apiController.userNotification);
+
 router.post('/brokerProfile',apiController.brokerProfile);
 router.get('/customer-reqest',apiController.customer_reqest);
 router.get('/broker-reqest',apiController.broker_reqest);

@@ -44,6 +44,7 @@ module.exports = {
 	bookingUpdate: bookingUpdate,
 	logOut: logOut,
 	cronjob: cronjob,
+	userNotification: userNotification,
 	adminBooking: adminBooking,
 	brokerStatus: brokerStatus,
 	testNotification: testNotification
@@ -84,6 +85,40 @@ async function cronjob(req, res, next){
 	} finally {
 		qb.disconnect();
 	}
+}
+
+async function userNotification(req, res, next) {
+  apiModel.save_api_name('userNotification');
+  const qb = await dbs.get_connection();
+  try {
+    const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		const customer_id = await qb.select('roll_id').where('id', user.id).from('users').get();
+		let notification = {};
+		if (customer_id[0].roll_id == '1') {
+			notification = await qb
+        .select('*')
+        .where('cus_id', user.id)
+        .where('cus_badge', '1')
+        .where('notification_for', '1')
+        .from('notifications')
+        .get();
+    }else{
+			notification = await qb
+        .select('*')
+        .where('broker_id', user.id)
+        .where('brok_badge', '2')
+        .where('notification_for', '2')
+        .from('notifications')
+        .get();
+		}
+    return res.json(
+      halper.api_response(1, 'my notification list', notification),
+    );
+  } catch (err) {
+    return res.json(halper.api_response(0, 'This is invalid request', {}));
+  } finally {
+    qb.disconnect();
+  }
 }
 
 
@@ -148,7 +183,6 @@ async function customer_reqest(req, res, next){    // for broker app api
 	apiModel.save_api_name('customer_reqest');
 	const qb = await dbs.get_connection();
 	try {
-		console.log(req.headers);
 		let now = new Date();
 		let date_format = dateFormat(now,'yyyy-mm-d 00:01:01');
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);

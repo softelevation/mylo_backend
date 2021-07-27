@@ -57,6 +57,7 @@ async function add_status(object1) {
 	try {
 		var now = new Date();
 		const user = await jwt.verify(object1.token, accessTokenSecret);
+		let customer = await qb.select('name').where('id', user.id).get('users');
 		let brokers = await qb.select(['id','token']).where({roll_id: 2,status:1}).get('users');
 		let result = brokers.map(a => a.token);
 		let result_id = brokers.map(a => '-'+a.id+'-');
@@ -76,6 +77,14 @@ async function add_status(object1) {
 		if (object1.lng){
 			object_add.location = object1.location;
 		}
+		qb.insert('notifications', {
+      cus_id: user.id,
+      broker_id: result_id.toString(),
+      message: `${customer[0].name} have a new mission request`,
+      cus_badge: 0,
+      brok_badge: 1,
+      notification_for: 2
+    });
 		let book_now = await qb.returning('id').insert('book_nows', object_add);
 		notification_s(user.id,result);
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
@@ -115,6 +124,7 @@ async function change_status(msg) {
 	if(msg.status == 'in_progress'){
 		notification_change_request(msg, 'in_progress');
 		apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
+
 	}else if (msg.status == 'cancelled') {
 		notification_change_request(msg, 'cancelled');
 		apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
@@ -150,7 +160,13 @@ var notification_change_request = async function (msg,statu_s,callback) {
 		var fcm = new FCM(serverKey);
 	
 		const qb = await dbs.get_connection();
-		const users = await qb.select(['users.name','users.token']).where('book_nows.id',msg.id).limit(1).from('book_nows').join('users','users.id=book_nows.cus_id').get();
+		const users = await qb
+      .select(['users.id', 'users.name', 'users.token'])
+      .where('book_nows.id', msg.id)
+      .limit(1)
+      .from('book_nows')
+      .join('users', 'users.id=book_nows.cus_id')
+      .get();
 		
 		let brokers = await qb.select(['name']).where({id: msg.broker_id}).limit(1).get('users');
 		
@@ -159,6 +175,14 @@ var notification_change_request = async function (msg,statu_s,callback) {
 		if (statu_s == 'cancelled') {
 			message_s = username + ' has cancelled your request';
     }
+		qb.insert('notifications', {
+      cus_id: users[0].id,
+      broker_id: msg.broker_id,
+      message: message_s,
+      cus_badge: 1,
+      brok_badge: 0,
+      notification_for: 1,
+    });
 		console.log(message_s);
 		console.log(users[0].token);
 		var message = {

@@ -105,7 +105,7 @@ async function add_status(object1) {
       cus_badge: 0,
       brok_badge: 1,
       notification_for: 2,
-      status: 'accepted'
+      status: 'pending',
     });
 		notification_s(user.id,result);
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');

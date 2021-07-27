@@ -521,7 +521,7 @@ async function registered(req, res, next){
 		qb.select(['id','roll_id']).where({phone_no: inputRequest.phone_no}).limit(1).get('users', async (err, response) => {
 			if (err) return res.json(halper.api_response(0,'invalid request',err.msg));
 
-			let otp_message = `${otp} is your OTP for verification from BullsFortune. Please do not share your OTP with anyone.`;
+			let otp_message = `${otp} is your OTP for verification from Mylo Pro. Please do not share your OTP with anyone.`;
 			if (inputRequest.phone_no.indexOf('+') !== -1) {
         halper.sand_sms(inputRequest.phone_no, otp_message);
       }

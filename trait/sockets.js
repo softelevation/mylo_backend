@@ -130,7 +130,8 @@ async function add_status(object1) {
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d H:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d H:MM:ss'),for_broker:result_id.toString()};
 		
 		if (object1.assign_at){
-			object_add.assign_at = convertGMT(object1.assign_at, object1.time_zone);
+			object_add.assign_at = dateFormat(object1.assign_at, 'yyyy-m-d H:MM:ss');
+			// convertGMT(object1.assign_at, object1.time_zone);
 		}else{
 			object_add.assign_at = dateFormat(now,'yyyy-m-d H:MM:ss');
 		}

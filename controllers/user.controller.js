@@ -397,7 +397,7 @@ async function profile(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
-		let users = await qb.select(['name','email','phone_no','image','roll_id','status','address','qualifications','banks','about_me']).where({id: user.id}).limit(1).get('users');
+		let users = await qb.select(['id','name','email','phone_no','image','roll_id','status','address','qualifications','banks','about_me']).where({id: user.id}).limit(1).get('users');
 		return res.json(halper.api_response(1,'User profile',users[0]));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));

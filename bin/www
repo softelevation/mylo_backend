@@ -39,7 +39,7 @@ io.on('connection', (socket) => {
 		io.emit('refresh_feed',{status:1,type:'book_broker'});
 		if(msg.status == 'in_progress'){
 			let uuuuuuuu = await sockets.broker_detail(msg);
-			io.emit('broker_details',uuuuuuuu);
+			io.emit(`broker_details_${uuuuuuuu.customer}`, uuuuuuuu.broker);
 		}
 	});
 });

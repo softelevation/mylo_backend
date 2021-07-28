@@ -130,8 +130,8 @@ async function add_status(object1) {
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d H:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d H:MM:ss'),for_broker:result_id.toString()};
 		
 		if (object1.assign_at){
+			console.log(object1.assign_at);
 			object_add.assign_at = dateFormat(object1.assign_at, 'yyyy-m-d H:MM:ss');
-			console.log(object_add.assign_at);
 			// convertGMT(object1.assign_at, object1.time_zone);
 		}else{
 			object_add.assign_at = dateFormat(now,'yyyy-m-d H:MM:ss');
@@ -290,16 +290,12 @@ var notification_change_request = async function (msg,statu_s,callback) {
 
 
 var notification_s = async function (msg,result,callback) {
+	const qb = await dbs.get_connection();
 	try {
-		
 		var FCM = require('fcm-node');
 		let serverKey = process.env.cus_key;
 		var fcm = new FCM(serverKey);
-	
-		const qb = await dbs.get_connection();
 		let users = await qb.select(['id','name','email','phone_no','token']).where({id: msg}).get('users');
-		
-		
 		let username = (users[0].name) ? users[0].name: "Customer";
 		var message = {
 			registration_ids : result,

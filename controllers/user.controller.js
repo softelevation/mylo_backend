@@ -718,10 +718,11 @@ async function testNotification(req, res, next){
 		let input = {}
 		var sockets = require('../trait/sockets');
 		// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
-		sockets.notification_badge({
+		sockets.change_status({
+      id: 3,
+      status: 'in_progress',
       token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjQsImlhdCI6MTYyNzQ1ODIzOX0.jAKaVsDZQppTOPYBTW1_fK8a4Jx9F8214XMFkUDT_Lk',
-      id: 'all',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjQsImlhdCI6MTYyNzQ3MTkwOH0.HdhCPe-DC70N2mmwdxDtZPOsIYF_tYHPXBIlL736YdI',
     });
 		// console.log(req.params.id);
 		// let otp = 123;

@@ -233,6 +233,7 @@ var notification_change_request = async function (msg,statu_s) {
     var FCM = require('fcm-node');
     var serverKey = process.env.cus_key;
     var fcm = new FCM(serverKey);
+		var now = new Date();
     const users = await qb
       .select(['users.id', 'users.name', 'users.token'])
       .where('book_nows.id', msg.id)
@@ -252,18 +253,6 @@ var notification_change_request = async function (msg,statu_s) {
     if (statu_s == 'cancelled') {
       message_s = username + ' has cancelled your request';
     }
-		console.log({
-      booking_id: msg.id,
-      cus_id: users[0].id,
-      broker_id: msg.broker_id,
-      message: message_s,
-      cus_badge: 1,
-      brok_badge: 0,
-      notification_for: 1,
-      status: statu_s,
-      created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
-      updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
-    });
     qb.insert('notifications', {
       booking_id: msg.id,
       cus_id: users[0].id,

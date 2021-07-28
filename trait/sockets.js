@@ -74,6 +74,7 @@ var remove_notification_badge = async function (msg) {
 async function notification_badge(msg) {
 		const qb = await dbs.get_connection();
 		try {
+			console.log(msg);
 			const user = await jwt.verify(msg.token, accessTokenSecret);
 			let users = await qb.select('roll_id').where('id', user.id).get('users');
 			if (users[0].roll_id == '1') {

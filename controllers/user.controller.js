@@ -97,21 +97,24 @@ async function userNotification(req, res, next) {
 			notification = await qb
         .select([
           'id',
-					'booking_id',
+          'booking_id',
           'cus_id',
           'message',
           'cus_badge',
           'brok_badge',
           'notification_for',
-					'status',
+          'status',
           'created_at',
         ])
         .where('cus_id', user.id)
         .where('cus_badge', '1')
         .where('notification_for', '1')
         .from('notifications')
+        .order_by('id', 'desc')
         .get();
     }else{
+			let user_id = '-' + user.id + '-';
+			// console.log(user_id);
 			notification = await qb
         .select([
           'id',
@@ -124,10 +127,11 @@ async function userNotification(req, res, next) {
           'status',
           'created_at',
         ])
-        .where('broker_id', user.id)
-        .where('brok_badge', '2')
+        .where('brok_badge', '1')
         .where('notification_for', '2')
+        .like('broker_id', user_id)
         .from('notifications')
+        .order_by('id', 'desc')
         .get();
 		}
     return res.json(
@@ -680,7 +684,9 @@ function defaultUrl(req, res, next){
 async function testNotification(req, res, next){
 	// const qb = await dbs.get_connection();
 	try {
-		
+		let now = new Date();
+		let date_format = dateFormat(now, 'yyyy-mm-d H:MM:ss');
+		console.log(date_format);
 		let input = {}
 		// var sockets = require('../trait/sockets');
 		// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();

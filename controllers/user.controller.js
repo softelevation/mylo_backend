@@ -681,12 +681,19 @@ function defaultUrl(req, res, next){
     });
 }
 
+var convertUTC = function (date_format, time_zone) {
+  let moment = require('moment-timezone').tz(date_format, time_zone);
+  return moment.utc().format('YYYY-MM-DD HH:mm:ss');
+};
+
+
 async function testNotification(req, res, next){
 	// const qb = await dbs.get_connection();
-	try {
-		let now = new Date();
+	// try {
+		let now = new Date().toISOString();
 		let date_format = dateFormat(now, 'yyyy-mm-d H:MM:ss');
-		console.log(date_format);
+		// convertUTC(date_format, 'Asia/Kolkata');
+		console.log(convertUTC(date_format, 'Asia/Kolkata'));
 		let input = {}
 		// var sockets = require('../trait/sockets');
 		// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
@@ -706,11 +713,11 @@ async function testNotification(req, res, next){
 		// let statu_s = (req.body.status && (req.body.status == 1 || req.body.status == 2)) ? req.body.status : 1;
 		// apiModel.update('users', {id:user.id}, {status: statu_s});
 		return res.status(200).json(halper.api_response(1,'input parms',input));
-	} catch (err) {
-		return res.json(halper.api_response(0,'This is invalid request',{}));
-	} finally {
-		// qb.disconnect();
-	}
+	// } catch (err) {
+	// 	return res.json(halper.api_response(0,'This is invalid request',{}));
+	// } finally {
+	// 	// qb.disconnect();
+	// }
 	
 }
 

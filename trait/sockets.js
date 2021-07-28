@@ -50,6 +50,7 @@ async function notification_working(token,roll_id) {
 
 
 async function notification_badge(msg) {
+		console.log(msg);
 		const qb = await dbs.get_connection();
 		try {
 			const user = await jwt.verify(msg.token, accessTokenSecret);
@@ -74,9 +75,9 @@ async function notification_badge(msg) {
     }
 }
 
-var convertGMT = function (date) {
-  let date_time = new Date(date).toLocaleString('en-US', { timeZone: 'GMT' });
-  return dateFormat(date_time, 'yyyy-mm-d H:MM:ss');
+var convertGMT = function (date_format, time_zone) {
+  let moment = require('moment-timezone').tz(date_format, time_zone);
+  return moment.utc().format('YYYY-MM-DD HH:mm:ss');
 };
 
 async function add_status(object1) {
@@ -91,7 +92,7 @@ async function add_status(object1) {
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d H:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d H:MM:ss'),for_broker:result_id.toString()};
 		
 		if (object1.assign_at){
-			object_add.assign_at = convertGMT(object1.assign_at);
+			object_add.assign_at = convertGMT(object1.assign_at, object1.time_zone);
 		}else{
 			object_add.assign_at = dateFormat(now,'yyyy-m-d H:MM:ss');
 		}

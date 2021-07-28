@@ -156,6 +156,8 @@ async function add_status(object1) {
       brok_badge: 1,
       notification_for: 2,
       status: 'pending',
+      created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+      updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
     });
 		notification_s(user.id,result);
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
@@ -258,6 +260,8 @@ var notification_change_request = async function (msg,statu_s,callback) {
       brok_badge: 0,
       notification_for: 1,
       status: statu_s,
+      created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+      updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
     });
     // console.log(message_s);
     console.log(users[0].token);

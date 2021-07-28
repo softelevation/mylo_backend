@@ -279,13 +279,34 @@ async function broker_reqest(req, res, next){         // for customer app api
 	try {
 		var now = new Date();
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
-		// console.log(user);
+		let upcoming = {};
+		let completed = {};
 		let up_query = "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '"+user.id+"' AND (book_nows.status = 'in_progress' OR book_nows.status = 'pending') AND book_nows.assign_at >= '"+dateFormat(now,'yyyy-mm-d')+"' ORDER BY book_nows.id DESC";
-		const upcoming = await qb.query(up_query);
-		// const upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status','pending').or_where('book_nows.status', 'in_progress').from('book_nows').join('users','users.id=book_nows.broker_id','left').order_by('book_nows.id','desc').get();
-		const completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.assign_at','book_nows.location','book_nows.created_at','book_nows.updated_at']).where('book_nows.cus_id',user.id).where_in('book_nows.status',['completed','rejected','cancelled']).from('book_nows').join('users','users.id=book_nows.broker_id').order_by('book_nows.id','desc').get();
+		upcoming = await qb.query(up_query);
+
+		if (req.headers.time_zone) {
+      upcoming = upcoming.map(function (response) {
+        response.assign_at = convertTZ(
+          response.assign_at,
+          req.headers.time_zone,
+        );
+        return response;
+      });
+    }
+
+		completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.assign_at','book_nows.location','book_nows.created_at','book_nows.updated_at']).where('book_nows.cus_id',user.id).where_in('book_nows.status',['completed','rejected','cancelled']).from('book_nows').join('users','users.id=book_nows.broker_id').order_by('book_nows.id','desc').get();
+
+		if (req.headers.time_zone) {
+      completed = completed.map(function (response) {
+        response.assign_at = convertTZ(
+          response.assign_at,
+          req.headers.time_zone,
+        );
+        return response;
+      });
+    }
+		
 		return res.json(halper.api_response(1,'Broker request',{upcoming:upcoming,completed:completed}));
-		// return res.json(upcoming);
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
@@ -690,18 +711,18 @@ var convertUTC = function (date_format, time_zone) {
 async function testNotification(req, res, next){
 	// const qb = await dbs.get_connection();
 	// try {
-		let now = new Date().toISOString();
-		let date_format = dateFormat(now, 'yyyy-mm-d H:MM:ss');
+		// let now = new Date().toISOString();
+		// let date_format = dateFormat(now, 'yyyy-mm-d H:MM:ss');
 		// convertUTC(date_format, 'Asia/Kolkata');
-		console.log(convertUTC(date_format, 'Asia/Kolkata'));
+		// console.log(convertUTC(date_format, 'Asia/Kolkata'));
 		let input = {}
-		// var sockets = require('../trait/sockets');
+		var sockets = require('../trait/sockets');
 		// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
-		// sockets.notification_badge({
-    //   token:
-    //     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMyLCJpYXQiOjE2MjczNjgwMTN9.zvRvLOBfgqhh0td1636tXn4-4dX7vnrVIn51O4GHYUs',
-    //   id: 2,
-    // });
+		sockets.notification_badge({
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjQsImlhdCI6MTYyNzQ1ODIzOX0.jAKaVsDZQppTOPYBTW1_fK8a4Jx9F8214XMFkUDT_Lk',
+      id: 'all',
+    });
 		// console.log(req.params.id);
 		// let otp = 123;
 		// let text_message = `Your otp is ${otp}`;

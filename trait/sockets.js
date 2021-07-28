@@ -49,8 +49,29 @@ async function notification_working(token,roll_id) {
 }
 
 
+var remove_notification_badge = async function (msg) {
+  try {
+		let user_id = '-' + msg.broker_id + '-';
+    let users = await msg.qb
+      .select(['id', 'broker_id'])
+      .where('id', msg.id)
+      .get('notifications');
+    let for_broker_string = users[0].broker_id.split(',');
+    let index_broker_string = for_broker_string.indexOf(user_id);
+    for_broker_string.splice(index_broker_string, 1);
+    msg.qb.update(
+      'notifications',
+      { broker_id: for_broker_string.toString() },
+      { id: msg.id },
+    );
+    return true;
+  } catch (err) {
+    return false;
+  } finally {
+  }
+};
+
 async function notification_badge(msg) {
-		console.log(msg);
 		const qb = await dbs.get_connection();
 		try {
 			const user = await jwt.verify(msg.token, accessTokenSecret);
@@ -63,9 +84,26 @@ async function notification_badge(msg) {
 				}
       }else{
 				if (msg.id != 'all'){
-						apiModel.update('notifications', { id: msg.id }, { brok_badge: 0 });
+						remove_notification_badge({
+              id: msg.id,
+              broker_id: user.id,
+              qb: qb,
+            });
+					return true;
 				}else{
-						apiModel.update('notifications', { broker_id: user.id }, { brok_badge: 0 });
+					let user_id = '-' + user.id + '-';
+					let user_notifications = await qb
+            .select('id')
+            .like('broker_id', user_id)
+            .get('notifications');
+					for (let user_notification of user_notifications) {
+						remove_notification_badge({
+              id: user_notification.id,
+              broker_id: user.id,
+              qb: qb,
+            });
+          }
+						return true;
 				}
 			}
     } catch (err) {

@@ -237,15 +237,15 @@ async function customer_reqest(req, res, next){    // for broker app api
         "' ORDER BY `book_nows`.`id` DESC";
 			upcoming = await qb.query(up_query);
 		}
-		// if (req.headers.time_zone) {
-    //   upcoming = upcoming.map(function (response) {
-		// 		response.created_at = convertTZ(
-    //       response.created_at,
-    //       req.headers.time_zone,
-    //     );
-    //     return response;
-    //   });
-    // }
+		if (req.headers.time_zone) {
+      upcoming = upcoming.map(function (response) {
+				response.created_at = convertTZ(
+          response.created_at,
+          req.headers.time_zone,
+        );
+        return response;
+      });
+    }
 		
 		let completed_query =
       "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` != 'in_progress' AND `book_nows`.`assign_at` <= '" +
@@ -254,15 +254,15 @@ async function customer_reqest(req, res, next){    // for broker app api
       user_id +
       "%' ORDER BY `book_nows`.`id` DESC";
 		completed = await qb.query(completed_query);
-		// if (req.headers.time_zone) {
-    //   completed = completed.map(function (response) {
-    //     response.created_at = convertTZ(
-    //       response.created_at,
-    //       req.headers.time_zone,
-    //     );
-    //     return response;
-    //   });
-    // }
+		if (req.headers.time_zone) {
+      completed = completed.map(function (response) {
+        response.created_at = convertTZ(
+          response.created_at,
+          req.headers.time_zone,
+        );
+        return response;
+      });
+    }
 
 		
 		return res.json(halper.api_response(1,'Customer request',{upcoming:upcoming,completed:completed}));
@@ -284,27 +284,27 @@ async function broker_reqest(req, res, next){         // for customer app api
 		let up_query = "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '"+user.id+"' AND (book_nows.status = 'in_progress' OR book_nows.status = 'pending') AND book_nows.assign_at >= '"+dateFormat(now,'yyyy-mm-d')+"' ORDER BY book_nows.id DESC";
 		upcoming = await qb.query(up_query);
 
-		// if (req.headers.time_zone) {
-    //   upcoming = upcoming.map(function (response) {
-    //     response.assign_at = convertTZ(
-    //       response.assign_at,
-    //       req.headers.time_zone,
-    //     );
-    //     return response;
-    //   });
-    // }
+		if (req.headers.time_zone) {
+      upcoming = upcoming.map(function (response) {
+        response.assign_at = convertTZ(
+          response.assign_at,
+          req.headers.time_zone,
+        );
+        return response;
+      });
+    }
 
 		completed = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.assign_at','book_nows.location','book_nows.created_at','book_nows.updated_at']).where('book_nows.cus_id',user.id).where_in('book_nows.status',['completed','rejected','cancelled']).from('book_nows').join('users','users.id=book_nows.broker_id').order_by('book_nows.id','desc').get();
 
-		// if (req.headers.time_zone) {
-    //   completed = completed.map(function (response) {
-    //     response.assign_at = convertTZ(
-    //       response.assign_at,
-    //       req.headers.time_zone,
-    //     );
-    //     return response;
-    //   });
-    // }
+		if (req.headers.time_zone) {
+      completed = completed.map(function (response) {
+        response.assign_at = convertTZ(
+          response.assign_at,
+          req.headers.time_zone,
+        );
+        return response;
+      });
+    }
 		
 		return res.json(halper.api_response(1,'Broker request',{upcoming:upcoming,completed:completed}));
 	} catch (err) {

@@ -550,7 +550,7 @@ async function registered(req, res, next){
 				inputRequest.roll_id = parseInt(response[0].roll_id);
 				inputRequest.roll_name = halper.get_role_id(inputRequest.roll_id);
 				// 
-				return res.json(halper.api_response(1,'user create successfully',inputRequest));
+				return res.json(halper.api_response(1,'Otp sent successfully',inputRequest));
 			}else{
 				const insert_id = await qb.returning('id').insert('users', inputRequest);
 				let user_id = insert_id.insertId;
@@ -558,7 +558,9 @@ async function registered(req, res, next){
 				inputRequest.otp = otp;
 				inputRequest.roll_id = halper.get_role_id('user');
 				inputRequest.roll_name = halper.get_role_id(1);
-				return res.json(halper.api_response(1,'user create successfully',inputRequest));
+				return res.json(
+          halper.api_response(1, 'Otp sent successfully', inputRequest),
+        );
 			}
 		});
 		

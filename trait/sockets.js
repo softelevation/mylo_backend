@@ -74,7 +74,6 @@ var remove_notification_badge = async function (msg) {
 async function notification_badge(msg) {
 		const qb = await dbs.get_connection();
 		try {
-			console.log(msg);
 			const user = await jwt.verify(msg.token, accessTokenSecret);
 			let users = await qb.select('roll_id').where('id', user.id).get('users');
 			if (users[0].roll_id == '1') {
@@ -90,7 +89,7 @@ async function notification_badge(msg) {
               broker_id: user.id,
               qb: qb,
             });
-					return true;
+					return user.id;
 				}else{
 					let user_id = '-' + user.id + '-';
 					let user_notifications = await qb
@@ -104,7 +103,7 @@ async function notification_badge(msg) {
               qb: qb,
             });
           }
-						return true;
+						return user.id;
 				}
 			}
     } catch (err) {
@@ -198,21 +197,40 @@ async function broker_detail(msg) {
 
 
 async function change_status(msg) {
-	const user = await jwt.verify(msg.token, accessTokenSecret);
-	console.log(msg);
-	msg.broker_id = user.id;
-	if(msg.status == 'in_progress'){
-		notification_change_request(msg, 'in_progress');
-		apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
-
-	}else if (msg.status == 'cancelled') {
-		notification_change_request(msg, 'cancelled');
-		apiModel.update('book_nows',{id: msg.id},{status: msg.status,broker_id:user.id});
-	}else if(msg.status == 'rejected'){
-		remove_broker(msg);
-		return true;
-		// console.log(msg);
-	}
+	const qb = await dbs.get_connection();
+	try {
+    const user = await jwt.verify(msg.token, accessTokenSecret);
+    let booking_customer = await qb
+      .select('cus_id')
+      .where('id', msg.id)
+      .limit(1)
+      .get('book_nows');
+    msg.broker_id = user.id;
+    if (msg.status == 'in_progress') {
+      notification_change_request(msg, 'in_progress');
+      apiModel.update(
+        'book_nows',
+        { id: msg.id },
+        { status: msg.status, broker_id: user.id },
+      );
+    } else if (msg.status == 'cancelled') {
+      notification_change_request(msg, 'cancelled');
+      apiModel.update(
+        'book_nows',
+        { id: msg.id },
+        { status: msg.status, broker_id: user.id },
+      );
+    } else if (msg.status == 'rejected') {
+      remove_broker(msg);
+      // return true;
+      // console.log(msg);
+    }
+		return booking_customer[0].cus_id;
+  } catch (err) {
+    return res.json(halper.api_response(0, 'This is invalid request', {}));
+  } finally {
+    qb.disconnect();
+  }
 }
 
 var remove_broker = async function (msg,callback) {

@@ -193,6 +193,7 @@ async function broker_detail(msg) {
 
 async function change_status(msg) {
 	const user = await jwt.verify(msg.token, accessTokenSecret);
+	console.log(msg);
 	msg.broker_id = user.id;
 	if(msg.status == 'in_progress'){
 		notification_change_request(msg, 'in_progress');
@@ -226,7 +227,7 @@ var remove_broker = async function (msg,callback) {
 }
 
 
-var notification_change_request = async function (msg,statu_s,callback) {
+var notification_change_request = async function (msg,statu_s) {
 	const qb = await dbs.get_connection();
 	try {
     var FCM = require('fcm-node');

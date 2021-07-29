@@ -225,7 +225,7 @@ async function change_status(msg) {
       // return true;
       // console.log(msg);
     }
-		return booking_customer[0].cus_id;
+		return true;
   } catch (err) {
     return res.json(halper.api_response(0, 'This is invalid request', {}));
   } finally {

@@ -36,10 +36,10 @@ io.on('connection', (socket) => {
 	
 	socket.on('request', async (msg) => {
 		let user_id = await sockets.change_status(msg);
-		io.emit(`refresh_feed_${user_id}`, { status: 1, type: 'book_broker' });
+		io.emit(`refresh_feed_${user_id}`, { status: 1, type: 'book_broker' }); // for customer app
 		if(msg.status == 'in_progress'){
 			let uuuuuuuu = await sockets.broker_detail(msg);
-			io.emit(`broker_details_${uuuuuuuu.customer}`, uuuuuuuu.broker);
+			io.emit(`broker_details_${uuuuuuuu.customer}`, uuuuuuuu.broker);  // for brokerapp
 		}
 	});
 });

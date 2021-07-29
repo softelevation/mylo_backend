@@ -181,12 +181,7 @@ async function broker_detail(msg) {
 	try {
 		const user = await jwt.verify(msg.token, accessTokenSecret);
 		let users = await qb.select('*').where('id',user.id).limit(1).get('users');
-		let booking_customer = await qb
-      .select('cus_id')
-      .where('id', msg.id)
-      .limit(1)
-      .get('book_nows');
-		return { customer: booking_customer[0].cus_id, broker: users[0] };
+		return { customer: user.id, broker: users[0] };
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {

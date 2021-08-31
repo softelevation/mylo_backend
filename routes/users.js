@@ -34,8 +34,8 @@ router.post('/delete-data',apiController.deleteData);
 router.get('/notification', apiController.userNotification);
 
 router.post('/brokerProfile',apiController.brokerProfile);
-router.get('/customer-reqest',apiController.customer_reqest);
-router.get('/broker-reqest',apiController.broker_reqest);
+router.get('/customer-reqest',apiController.customer_reqest);     // for broker app api
+router.get('/broker-reqest',apiController.broker_reqest);        // for customer app api
 router.post('/book-reqest',apiController.bookReqest);
 router.post('/booking-update',apiController.bookingUpdate);
 

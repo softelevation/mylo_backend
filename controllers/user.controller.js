@@ -413,12 +413,21 @@ async function profilePost(req, res, next){
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let users = await qb.select('phone_no').where({id: user.id}).limit(1).get('users');
+		const rndInt = Math.floor(Math.random() * 999999999) + 1;
 		let inputRequest = {
 							name: req.body.name,
 							email: req.body.email,
 							address: req.body.address
 						}
-		qb.update('users', halper.empty_array(inputRequest), {id:user.id});
+		if (req.body.image){
+				let base64Data = req.body.image.replace(/^data:image\/png;base64,/, '');
+				base64Data = base64Data.replace(/^data:image\/jpeg;base64,/, '');
+				let agent_signature = 'images/user' + rndInt + '.png';
+				require("fs").writeFile("public/"+agent_signature, base64Data, 'base64', function(err) {
+				});
+				inputRequest.image = agent_signature;
+		}
+      qb.update('users', halper.empty_array(inputRequest), { id: user.id });
 		inputRequest.phone_no = users[0].phone_no;
 		return res.json(halper.api_response(1,'Profile update successfully',inputRequest));
 	} catch (err) {

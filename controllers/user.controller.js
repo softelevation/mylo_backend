@@ -512,7 +512,23 @@ async function verifyOtp(req, res, next){
 					objects.name = inputRequest.name;
 				}
 				if(inputRequest.image){
-					objects.image = inputRequest.image;
+					// objects.image = inputRequest.image;
+					const rndInt = Math.floor(Math.random() * 999999999) + 1;
+					var request = require('request').defaults({ encoding: null });
+					let agent_signature = 'images/user' + rndInt + '.png';
+					let response_image = request.get(inputRequest.image, function (error, response, body) {
+						if (!error && response.statusCode == 200) {
+								require("fs").writeFile("public/"+agent_signature, Buffer.from(body).toString('base64'), 'base64', function(err) {
+							});
+							return true;
+						}else{
+							return false;
+						}
+					});
+					if(response_image){
+						objects.image = agent_signature;
+						inputRequest.image = agent_signature;
+					}
 				}
 				if(response.length > 0){
 					apiModel.updateOrCreate('users', objects, {email:inputRequest.email});

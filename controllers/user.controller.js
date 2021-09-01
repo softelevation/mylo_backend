@@ -278,6 +278,7 @@ async function customer_reqest(req, res, next){    // for broker app api
 async function broker_reqest(req, res, next){         // for customer app api
 	const qb = await dbs.get_connection();
 	try {
+		console.log(req.headers);
 		var now = new Date();
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let upcoming = {};

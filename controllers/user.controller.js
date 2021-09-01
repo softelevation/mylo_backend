@@ -201,8 +201,8 @@ async function bookingUpdate(req, res, next){
 var convertTZ = function (date, tzString) {
 	let date_time = new Date(date).toLocaleString('en-US', { timeZone: tzString });
 	// console.log(new Date (date_time));
-  // return dateFormat(date_time, 'yyyy-mm-d H:MM:ss');
-  return new Date (date_time);
+  return dateFormat(date_time, 'yyyy-mm-dd H:MM:ss');
+  // return new Date (dateFormat(date_time));
 };
 // console.log(convertTZ(upcoming[0].created_at, 'Asia/Kolkata'));
 

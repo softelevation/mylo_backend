@@ -82,6 +82,7 @@ async function notification_badge(msg) {
 				}else{
 						apiModel.update('notifications', { cus_id: user.id }, { cus_badge: 0 });
 				}
+			return user.id;
       }else{
 				if (msg.id != 'all'){
 						remove_notification_badge({

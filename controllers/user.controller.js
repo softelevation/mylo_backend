@@ -200,7 +200,9 @@ async function bookingUpdate(req, res, next){
 
 var convertTZ = function (date, tzString) {
 	let date_time = new Date(date).toLocaleString('en-US', { timeZone: tzString });
-  return dateFormat(date_time, 'yyyy-mm-d H:MM:ss');
+	// console.log(new Date (date_time));
+  // return dateFormat(date_time, 'yyyy-mm-d H:MM:ss');
+  return new Date (date_time);
 };
 // console.log(convertTZ(upcoming[0].created_at, 'Asia/Kolkata'));
 
@@ -278,7 +280,6 @@ async function customer_reqest(req, res, next){    // for broker app api
 async function broker_reqest(req, res, next){         // for customer app api
 	const qb = await dbs.get_connection();
 	try {
-		console.log(req.headers);
 		var now = new Date();
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let upcoming = {};

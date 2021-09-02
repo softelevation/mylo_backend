@@ -125,9 +125,16 @@ async function add_status(object1) {
 		var now = new Date();
 		const user = await jwt.verify(object1.token, accessTokenSecret);
 		let customer = await qb.select('name').where('id', user.id).get('users');
-		let brokers = await qb.select(['id','token']).where('roll_id','2').get('users');
-		console.log(brokers);
-		let result = brokers.map(a => a.token);
+		let brokers = await qb.select(['id','status','token']).where('roll_id','2').get('users');
+		// console.log(brokers);
+		// let result = brokers.map(a => a.token);
+
+		let result = [];
+    for (let i = 0; i < brokers.length; i++) {
+      if (brokers[i].token !== null && brokers[i].status == '1')
+        result.push(brokers[i].token);
+    }
+
 		let result_id = brokers.map(a => '-'+a.id+'-');
 		let object_add = {cus_id:user.id,created_at:dateFormat(now,'yyyy-m-d H:MM:ss'),updated_at:dateFormat(now,'yyyy-m-d H:MM:ss'),for_broker:result_id.toString()};
 		

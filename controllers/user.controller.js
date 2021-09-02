@@ -777,11 +777,17 @@ async function testNotification(req, res, next){
 		let input = {}
 		var sockets = require('../trait/sockets');
 		// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
-		sockets.change_status({
-			  id: 115,
-			  status: 'cancelled',
-			  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ2LCJpYXQiOjE2MzA1MDM1MTN9.0j84SWCbdPEhasey0CTbhoGWcalMN9w_t1hIAZgUnqo'
-			});
+		sockets.add_status({
+      assign_at: '2021-09-03 07:49:41',
+      time_zone: 'Asia/Kolkata',
+      lat: '-33.8650229',
+      lng: '151.2099088',
+      location: "12 O'Connell St, Sydney NSW 2000, Australia",
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ2LCJpYXQiOjE2MzA1ODIyMzF9.7rnBChq7Fp92Go_lKh7zm-idl5vLVG6t0F7NZZKz1TU',
+    });
+
+		
 		// console.log(req.params.id);
 		// let otp = 123;
 		// let text_message = `Your otp is ${otp}`;

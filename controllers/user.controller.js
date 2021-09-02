@@ -93,10 +93,9 @@ async function userNotification(req, res, next) {
     const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		// console.log(user);
 		const customer_id = await qb.select('roll_id').where('id', user.id).from('users').get();
-		let notification = {};
+		let notification = [];
 		if (customer_id[0].roll_id == '1') {
-			notification = await qb
-        .select([
+		let my_notification = await qb.select([
           'id',
           'booking_id',
           'cus_id',
@@ -113,6 +112,12 @@ async function userNotification(req, res, next) {
         .from('notifications')
         .order_by('id', 'desc')
         .get();
+		let booking_details = [];
+		for (let mynotification of my_notification) {
+			booking_details = await qb.query("SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.id = '"+mynotification.booking_id+"'");
+			mynotification.booking_detail = booking_details[0];
+			notification.push(mynotification);
+		}
     }else{
 			let user_id = '-' + user.id + '-';
 			// console.log(user_id);

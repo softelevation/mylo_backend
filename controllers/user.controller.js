@@ -121,8 +121,7 @@ async function userNotification(req, res, next) {
     }else{
 			let user_id = '-' + user.id + '-';
 			// console.log(user_id);
-			notification = await qb
-        .select([
+		let my_notification = await qb.select([
           'id',
           'booking_id',
           'cus_id',
@@ -139,7 +138,14 @@ async function userNotification(req, res, next) {
         .from('notifications')
         .order_by('id', 'desc')
         .get();
+		let booking_details = [];
+			for (let mynotification of my_notification) {
+				booking_details = await qb.query("SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`created_at`,`book_nows`.`assign_at`,`book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`id` = '"+mynotification.booking_id+"'");
+				mynotification.booking_detail = booking_details[0];
+				notification.push(mynotification);
+			}
 		}
+		let booking_details = [];
     return res.json(
       halper.api_response(1, 'my notification list', notification),
     );

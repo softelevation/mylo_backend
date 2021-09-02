@@ -125,7 +125,7 @@ async function add_status(object1) {
 		var now = new Date();
 		const user = await jwt.verify(object1.token, accessTokenSecret);
 		let customer = await qb.select('name').where('id', user.id).get('users');
-		let brokers = await qb.select(['id','token']).where({roll_id: 2,status:1}).get('users');
+		let brokers = await qb.select(['id','token']).where('roll_id','2').get('users');
 		console.log(brokers);
 		let result = brokers.map(a => a.token);
 		let result_id = brokers.map(a => '-'+a.id+'-');
@@ -198,6 +198,7 @@ async function broker_detail(msg) {
 
 
 async function change_status(msg) {
+	console.log(msg);
 	const qb = await dbs.get_connection();
 	try {
     const user = await jwt.verify(msg.token, accessTokenSecret);

@@ -198,16 +198,18 @@ async function broker_detail(msg) {
 
 
 async function change_status(msg) {
-	console.log(msg);
 	const qb = await dbs.get_connection();
 	try {
     const user = await jwt.verify(msg.token, accessTokenSecret);
+	let user_detail = await qb.select(['id','name','roll_id']).where('id', user.id).limit(1).get('users');
     let booking_customer = await qb
       .select('cus_id')
       .where('id', msg.id)
       .limit(1)
       .get('book_nows');
     msg.broker_id = user.id;
+	msg.roll_id = user_detail[0].roll_id;
+	msg.user_name = user_detail[0].name;
     if (msg.status == 'in_progress') {
       notification_change_request(msg, 'in_progress');
       apiModel.update(
@@ -217,11 +219,11 @@ async function change_status(msg) {
       );
     } else if (msg.status == 'cancelled') {
       notification_change_request(msg, 'cancelled');
-      apiModel.update(
-        'book_nows',
-        { id: msg.id },
-        { status: msg.status, broker_id: user.id },
-      );
+	  if(msg.roll_id == '2'){
+		apiModel.update('book_nows',{ id: msg.id },{ status: msg.status, broker_id: user.id });
+	  }else{
+		apiModel.update('book_nows',{ id: msg.id },{ status: msg.status});
+	  }
     } else if (msg.status == 'rejected') {
       remove_broker(msg);
       // return true;
@@ -259,40 +261,55 @@ var notification_change_request = async function (msg,statu_s) {
     var FCM = require('fcm-node');
     var serverKey = process.env.cus_key;
     var fcm = new FCM(serverKey);
-		var now = new Date();
-    const users = await qb
-      .select(['users.id', 'users.name', 'users.token'])
-      .where('book_nows.id', msg.id)
-      .limit(1)
-      .from('book_nows')
-      .join('users', 'users.id=book_nows.cus_id')
-      .get();
+	var now = new Date();
+	
+	let users = {};
+	if(msg.roll_id == '2'){
+		users = await qb
+		  .select(['users.id', 'users.name', 'users.token'])
+		  .where('book_nows.id', msg.id).limit(1).from('book_nows').join('users', 'users.id=book_nows.cus_id').get();
+	}else{
+		users = await qb
+		  .select(['users.id', 'users.name', 'users.token'])
+		  .where('book_nows.id', msg.id).limit(1).from('book_nows').join('users', 'users.id=book_nows.broker_id').get();
+	}
 
-    let brokers = await qb
-      .select(['name'])
-      .where({ id: msg.broker_id })
-      .limit(1)
-      .get('users');
-
-    let username = brokers[0].name ? brokers[0].name : 'Broker';
+    // let brokers = await qb.select(['name']).where({ id: msg.broker_id })
+      // .limit(1)
+      // .get('users');
+	// console.log(users);
+    let username = msg.user_name ? msg.user_name : 'Broker';
     let message_s = username + ' has accepted your request';
     if (statu_s == 'cancelled') {
       message_s = username + ' has cancelled your request';
     }
-    qb.insert('notifications', {
-      booking_id: msg.id,
-      cus_id: users[0].id,
-      broker_id: msg.broker_id,
-      message: message_s,
-      cus_badge: 1,
-      brok_badge: 0,
-      notification_for: 1,
-      status: statu_s,
-      created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
-      updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
-    });
-    // console.log(message_s);
-    console.log(users[0].token);
+	if(msg.roll_id == '2'){
+		qb.insert('notifications', {
+		  booking_id: msg.id,
+		  cus_id: users[0].id,
+		  broker_id: msg.broker_id,
+		  message: message_s,
+		  cus_badge: 1,
+		  brok_badge: 0,
+		  notification_for: 1,
+		  status: statu_s,
+		  created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+		  updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+		});
+	}else{
+		qb.insert('notifications', {
+		  booking_id: msg.id,
+		  cus_id: msg.broker_id,
+		  broker_id: users[0].id,
+		  message: message_s,
+		  cus_badge: 0,
+		  brok_badge: 1,
+		  notification_for: 1,
+		  status: statu_s,
+		  created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+		  updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+		});
+	}
     var message = {
       to: users[0].token,
       notification: {
@@ -307,13 +324,11 @@ var notification_change_request = async function (msg,statu_s) {
     fcm.send(message, function (err, response) {
       if (err) {
         console.log(err);
-        // res.status(200).json(halper.api_response(0,'This is invalid request',"Something has gone wrong!"));
       } else {
         console.log(response);
-        // res.status(200).json(halper.api_response(1,'Brokers list',response));
       }
     });
-    // return 'qqqqqqqqqqqqqq';
+    return true;
   } catch (err) {
     return false;
   } finally {

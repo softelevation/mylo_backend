@@ -778,11 +778,10 @@ async function testNotification(req, res, next){
 		var sockets = require('../trait/sockets');
 		// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
 		sockets.change_status({
-      id: 3,
-      status: 'in_progress',
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjQsImlhdCI6MTYyNzQ3MTkwOH0.HdhCPe-DC70N2mmwdxDtZPOsIYF_tYHPXBIlL736YdI',
-    });
+			  id: 115,
+			  status: 'cancelled',
+			  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ2LCJpYXQiOjE2MzA1MDM1MTN9.0j84SWCbdPEhasey0CTbhoGWcalMN9w_t1hIAZgUnqo'
+			});
 		// console.log(req.params.id);
 		// let otp = 123;
 		// let text_message = `Your otp is ${otp}`;

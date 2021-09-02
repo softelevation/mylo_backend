@@ -266,7 +266,7 @@ async function customer_reqest(req, res, next){    // for broker app api
       date_format +
       "' AND `book_nows`.`for_broker` LIKE '%" +
       user_id +
-      "%' ORDER BY `book_nows`.`id` DESC";
+      "%' OR (`book_nows`.`status` = 'cancelled' AND `book_nows`.`broker_id` = "+user.id+") ORDER BY `book_nows`.`id` DESC";
 		completed = await qb.query(completed_query);
 		if (req.headers.time_zone) {
       completed = completed.map(function (response) {

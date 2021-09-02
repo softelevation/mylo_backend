@@ -787,6 +787,7 @@ async function testNotification(req, res, next){
 		// let text_message = `Your otp is ${otp}`;
 		// console.log(text_message);
 		
+		
 		// users.social_token
 		// let input = req.body;
 		// const user = await jwt.verify(req.headers.authorization, accessTokenSecret);

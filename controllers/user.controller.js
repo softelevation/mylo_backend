@@ -440,6 +440,7 @@ async function profilePost(req, res, next){
 				});
 				inputRequest.image = agent_signature;
 		}
+			console.log(inputRequest);
       qb.update('users', halper.empty_array(inputRequest), { id: user.id });
 		inputRequest.phone_no = users[0].phone_no;
 		return res.json(halper.api_response(1,'Profile update successfully',inputRequest));

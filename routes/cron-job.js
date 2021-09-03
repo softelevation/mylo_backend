@@ -3,6 +3,7 @@ var router = express.Router();
 var dbs = require('../db1');
 var bodyParser = require('body-parser');
 var halper = require('../halpers/halper');
+var apiModel = require('../Model/model');
 const dateFormat = require('dateformat');
 router.use(bodyParser.json());
 
@@ -62,6 +63,7 @@ router.get('/',async function(req,res){
     } catch (err) {
         return res.json(halper.api_response(0, 'This is invalid request', {}));
     } finally {
+        apiModel.save_api_name('cronjob');
         qb.disconnect();
     }
 });

@@ -143,7 +143,7 @@ async function add_status(object1) {
 			object_add.assign_at = convertGMT(object1.assign_at, object1.time_zone);
 			// dateFormat(object1.assign_at, 'yyyy-m-d H:MM:ss');
 		}else{
-			object_add.assign_at = dateFormat(now,'yyyy-m-d H:MM:ss');
+			object_add.assign_at = dateFormat(now,'yyyy-mm-dd H:MM:ss');
 		}
 		if (object1.lat){
 			object_add.latitude = object1.lat;

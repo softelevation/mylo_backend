@@ -42,6 +42,11 @@ io.on('connection', (socket) => {
 			io.emit(`broker_details_${uuuuuuuu.customer}`, uuuuuuuu.broker);
 		}
 	});
+
+  socket.on('user_location', async (msg) => {
+      let uuuuuuuu = await sockets.user_location(msg);
+      io.emit(`user_location_${msg.booking_id}`, uuuuuuuu);
+  });
 });
 
 

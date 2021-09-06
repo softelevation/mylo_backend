@@ -10,6 +10,7 @@ module.exports = {
 	change_status: change_status,
 	broker_detail: broker_detail,
 	notification_badge: notification_badge,
+	user_location: user_location,
 	notification_working: notification_working
 };
 
@@ -182,6 +183,38 @@ async function add_status(object1) {
 	} finally {
 		qb.disconnect();
 	}
+}
+
+
+async function user_location(msg) {
+	try {
+		// console.log(msg);
+		let now = new Date();
+		let now_date= dateFormat(now, 'yyyy-mm-dd H:MM:ss');
+		const user = await jwt.verify(msg.token, accessTokenSecret);
+		let obj = {
+      user_id: user.id,
+      current_latitude: msg.current_latitude,
+      current_longitude: msg.current_longitude,
+      current_latitudeDelta: msg.current_latitudeDelta,
+      current_longitudeDelta: msg.current_longitudeDelta,
+      current_angle: msg.current_angle,
+      created_at: now_date,
+      updated_at: now_date,
+    };
+		apiModel.updateOrCreate('user_trackings', obj, { user_id: user.id });
+		return {
+      current_latitude: msg.current_latitude,
+      current_longitude: msg.current_longitude,
+      current_latitudeDelta: msg.current_latitudeDelta,
+      current_longitudeDelta: msg.current_longitudeDelta,
+      current_angle: msg.current_angle
+    };
+  } catch (err) {
+    return flase;
+  } finally {
+    // qb.disconnect();
+  }
 }
 
 async function broker_detail(msg) {

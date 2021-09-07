@@ -11,6 +11,9 @@ module.exports = {
 	broker_detail: broker_detail,
 	notification_badge: notification_badge,
 	user_location: user_location,
+	travel_to_booking: travel_to_booking,
+	arrived_on_destination: arrived_on_destination,
+	finish_mission: finish_mission,
 	notification_working: notification_working
 };
 
@@ -174,8 +177,6 @@ async function add_status(object1) {
 			users: users[0],
 			book_now: book_now
 		};
-		
-		// return result_id.toString();
 	} catch (err) {
 		console.log('wwwwwwwwwwwwwwwwwww');
 		console.log(err);
@@ -183,6 +184,44 @@ async function add_status(object1) {
 	} finally {
 		qb.disconnect();
 	}
+}
+
+async function travel_to_booking(msg) {
+	try {
+		const user = await jwt.verify(msg.token, accessTokenSecret);
+		apiModel.update('book_nows', { id: msg.id }, { status: 'travel_to_booking' });
+		let cus_id = await apiModel.select('book_nows', ['cus_id'], { id: msg.id });
+		return cus_id[0];
+  } catch (err) {
+    return flase;
+  } finally {
+  }
+}
+
+async function arrived_on_destination(msg) {
+  try {
+    const user = await jwt.verify(msg.token, accessTokenSecret);
+    apiModel.update('book_nows', { id: msg.id }, { status: 'in_progress' });
+		let cus_id = await apiModel.select('book_nows', ['cus_id'], { id: msg.id });
+		return cus_id[0];
+  } catch (err) {
+    return flase;
+  } finally {
+  }
+}
+
+
+async function finish_mission(msg) {
+  try {
+    const user = await jwt.verify(msg.token, accessTokenSecret);
+		let now = new Date();
+    apiModel.update('book_nows', { id: msg.id }, { status: 'completed', finished_at: dateFormat(now,'yyyy-mm-dd H:MM:ss') });
+		let cus_id = await apiModel.select('book_nows', ['cus_id'], { id: msg.id });
+		return cus_id[0];
+  } catch (err) {
+    return flase;
+  } finally {
+  }
 }
 
 

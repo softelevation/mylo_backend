@@ -43,6 +43,21 @@ io.on('connection', (socket) => {
 		}
 	});
 
+  socket.on('travel_to_booking', async (msg) => {
+    let travel_to_booking = sockets.travel_to_booking(msg);
+    io.emit(`refresh_feed_${travel_to_booking.cus_id}`, { status: 1, type: 'travel_to_booking' });
+  });
+  socket.on('arrived_on_destination', async (msg) => {
+    let travel_to_booking = sockets.arrived_on_destination(msg);
+    io.emit(`refresh_feed_${travel_to_booking.cus_id}`, { status: 1, type: 'arrived_on_destination' });
+  });
+  socket.on('finish_mission', async (msg) => {
+    let travel_to_booking = sockets.finish_mission(msg);
+    io.emit(`refresh_feed_${travel_to_booking.cus_id}`, { status: 1, type: 'finish_mission' });
+  });
+
+
+
   socket.on('user_location', async (msg) => {
       let uuuuuuuu = await sockets.user_location(msg);
       io.emit(`user_location_${msg.booking_id}`, uuuuuuuu);

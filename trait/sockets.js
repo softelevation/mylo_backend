@@ -145,6 +145,7 @@ async function add_status(object1) {
 		if (object1.assign_at){
 			// console.log(object_add.assign_at);
 			object_add.assign_at = convertGMT(object1.assign_at, object1.time_zone);
+			object_add.type = 'later';
 			// dateFormat(object1.assign_at, 'yyyy-m-d H:MM:ss');
 		}else{
 			object_add.assign_at = dateFormat(now,'yyyy-mm-dd H:MM:ss');

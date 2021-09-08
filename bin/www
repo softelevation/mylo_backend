@@ -48,6 +48,8 @@ io.on('connection', (socket) => {
     io.emit(`refresh_feed_${travel_to_booking.cus_id}`, { status: 1, type: 'travel_to_booking' });
   });
   socket.on('arrived_on_destination', async (msg) => {
+    console.log('arrived_on_destination');
+    console.log(msg);
     let travel_to_booking = sockets.arrived_on_destination(msg);
     io.emit(`refresh_feed_${travel_to_booking.cus_id}`, { status: 1, type: 'arrived_on_destination' });
   });

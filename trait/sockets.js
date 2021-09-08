@@ -294,7 +294,7 @@ async function change_status(msg) {
       apiModel.update(
         'book_nows',
         { id: msg.id },
-        { status: msg.status, broker_id: user.id },
+        { status: 'accepted', broker_id: user.id },
       );
     } else if (msg.status == 'cancelled') {
       notification_change_request(msg, 'cancelled');
@@ -305,8 +305,6 @@ async function change_status(msg) {
 	  }
     } else if (msg.status == 'rejected') {
       remove_broker(msg);
-      // return true;
-      // console.log(msg);
     }
 		return true;
   } catch (err) {
@@ -317,7 +315,6 @@ async function change_status(msg) {
 }
 
 var remove_broker = async function (msg,callback) {
-		// console.log(msg);
 	const qb = await dbs.get_connection();
 	try {
 		let users = await qb.select('*').where('id',msg.id).limit(1).get('book_nows');

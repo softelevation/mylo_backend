@@ -200,6 +200,9 @@ async function travel_to_booking(msg) {
 
 async function arrived_on_destination(msg) {
   try {
+		
+		console.log('arrived_on_destination');
+		console.log(msg);
     const user = await jwt.verify(msg.token, accessTokenSecret);
     apiModel.update('book_nows', { id: msg.id }, { status: 'in_progress' });
 		let cus_id = await apiModel.select('book_nows', ['cus_id'], { id: msg.id });

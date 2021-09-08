@@ -313,7 +313,14 @@ async function broker_reqest(req, res, next){         // for customer app api
 		let upcoming = {};
 		let completed = {};
 
-		let up_query = "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '"+user.id+"' AND (book_nows.status = 'pending' AND book_nows.assign_at BETWEEN '"+curr_dateFormat+"' AND '"+date_format_newDateObj+"' OR book_nows.status IN ('in_progress','accepted','travel_to_booking')) ORDER BY book_nows.id DESC";
+		let up_query =
+      "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '" +
+      user.id +
+      "' AND (book_nows.status = 'pending' AND book_nows.assign_at BETWEEN '" +
+      curr_dateFormat +
+      "' AND '" +
+      date_format_newDateObj +
+      "' OR book_nows.status IN ('in_progress','accepted','travel_to_booking')) ORDER BY book_nows.id DESC";
 
 		// console.log(up_query);
 		upcoming = await qb.query(up_query);
@@ -327,7 +334,7 @@ async function broker_reqest(req, res, next){         // for customer app api
       });
     }
 		let complete_query =
-      "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at`, `book_nows`.`location`, `book_nows`.`created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`broker_id` WHERE `book_nows`.`cus_id` = '" +
+      "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at`, `book_nows`.`location`, `book_nows`.`latitude`, `book_nows`.`longitude`, `book_nows`.`created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`broker_id` WHERE `book_nows`.`cus_id` = '" +
       user.id +
       "' AND (`book_nows`.`status` IN ('completed', 'rejected', 'cancelled') OR book_nows.assign_at >= '" +
       date_format_newDateObj +

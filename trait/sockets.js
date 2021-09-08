@@ -219,6 +219,7 @@ async function finish_mission(msg) {
 		let cus_id = await apiModel.select('book_nows', ['cus_id'], { id: msg.id });
 		return cus_id[0];
   } catch (err) {
+		console.log(err);
     return flase;
   } finally {
   }

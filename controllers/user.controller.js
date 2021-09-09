@@ -303,8 +303,8 @@ async function broker_reqest(req, res, next){         // for customer app api
 		let now = new Date();
 		let now_plus_five = new Date();
 		now_plus_five.setTime(now.getTime() + 5 * 60 * 1000);
-		let curr_dateFormat = dateFormat(now, 'yyyy-mm-dd H:MM:ss');
-    let date_format_newDateObj = dateFormat(now_plus_five, 'yyyy-mm-dd H:MM:ss');
+		// let curr_dateFormat = dateFormat(now, 'yyyy-mm-dd H:MM:ss');
+    // let date_format_newDateObj = dateFormat(now_plus_five, 'yyyy-mm-dd H:MM:ss');
 
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let upcoming = {};
@@ -314,8 +314,9 @@ async function broker_reqest(req, res, next){         // for customer app api
 		let my_query =
       "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '" + user.id + "' ORDER BY book_nows.id DESC";
 		upcoming = await qb.query(my_query);
-		// console.log(`curr_dateFormat ${now}`);
-		// console.log(`date_format_newDateObj ${now_plus_five}`);
+		console.log(`curr_dateFormat ${now}`);
+		console.log(`date_format_newDateObj ${now_plus_five}`);
+	
 		for (let i = 0; i < upcoming.length; i++) {
       if (
         (upcoming[i].status == 'pending' &&

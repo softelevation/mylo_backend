@@ -302,7 +302,7 @@ async function broker_reqest(req, res, next){         // for customer app api
 	try {
 		let now = new Date();
 		let now_plus_five = new Date();
-		now_plus_five.setTime(now.getTime() + 5 * 60 * 1000);
+		now_plus_five.setTime(now.getTime() - 5 * 60 * 1000);
 		// let curr_dateFormat = dateFormat(now, 'yyyy-mm-dd H:MM:ss');
     // let date_format_newDateObj = dateFormat(now_plus_five, 'yyyy-mm-dd H:MM:ss');
 
@@ -321,8 +321,8 @@ async function broker_reqest(req, res, next){         // for customer app api
       if (
         (upcoming[i].status == 'pending' &&
           upcoming[i].type == 'asap' &&
-          upcoming[i].assign_at.getTime() >= now.getTime() &&
-          upcoming[i].assign_at.getTime() <= now_plus_five.getTime()) ||
+          upcoming[i].assign_at.getTime() <= now.getTime() &&
+          upcoming[i].assign_at.getTime() >= now_plus_five.getTime()) ||
         (upcoming[i].status == 'pending' &&
           upcoming[i].type == 'later' &&
           upcoming[i].assign_at.getTime() >= now.getTime()) ||

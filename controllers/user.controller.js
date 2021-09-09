@@ -57,15 +57,10 @@ async function adminBooking(req, res, next){
 		// qb.update('book_nows', {broker_id: user.id}, {id:input.book_id});
 		let now = new Date();
 		let date_format = dateFormat(now,'yyyy-m-d 00:01:01');
-		let up_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`location`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` = 'pending' AND `book_nows`.`assign_at` >= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
-		let completed_query = "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`location`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` = 'completed' OR `book_nows`.`status` = 'rejected' OR `book_nows`.`status` = 'cancelled' OR `book_nows`.`status` = 'expired' ORDER BY `book_nows`.`id` DESC LIMIT 50";
+		let up_query = "SELECT `cus_users`.`name` AS `cus_name`, `cus_users`.`email` AS `cus_email`, `cus_users`.`phone_no` AS `cus_phone_no`, `cus_users`.`image` AS `cus_image`, `cus_users`.`address` AS `cus_address`, `cus_users`.`qualifications` AS `cus_qualifications`, `book_nows`.`status`, `cus_users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`location`, `book_nows`.`updated_at`, `broker_name`.`name` AS `brok_name` FROM `book_nows` JOIN `users` as cus_users ON `cus_users`.`id` = `book_nows`.`cus_id` LEFT JOIN `users` as broker_name ON `broker_name`.`id` = `book_nows`.`broker_id` WHERE `book_nows`.`status` = 'pending' AND `book_nows`.`assign_at` >= '"+date_format+"' AND `book_nows`.`for_broker` LIKE '%-12-%' ORDER BY `book_nows`.`id` DESC";
+		let completed_query = "SELECT `cus_users`.`name` AS `cus_name`, `cus_users`.`email` AS `cus_email`, `cus_users`.`phone_no` AS `cus_phone_no`, `cus_users`.`image` AS `cus_image`, `cus_users`.`address` AS `cus_address`, `cus_users`.`qualifications` AS `cus_qualifications`, `book_nows`.`status`, `cus_users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at` AS `created_at`, `book_nows`.`location`, `book_nows`.`updated_at`, `broker_name`.`name` AS `brok_name` FROM `book_nows` JOIN `users` as cus_users ON `cus_users`.`id` = `book_nows`.`cus_id` LEFT JOIN `users` as broker_name ON `broker_name`.`id` = `book_nows`.`broker_id` WHERE `book_nows`.`status` = 'completed' OR `book_nows`.`status` = 'rejected' OR `book_nows`.`status` = 'cancelled' OR `book_nows`.`status` = 'expired' ORDER BY `book_nows`.`id` DESC LIMIT 50";
 		let upcoming = await qb.query(up_query);
-		
 		let completed = await qb.query(completed_query);
-		
-		// upcoming = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','users.about_me','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.status', 'in_progress').like('book_nows.for_broker',user_id).from('book_nows').join('users','users.id=book_nows.cus_id').order_by('book_nows.id','desc').get();
-		
-		// const users = await qb.select(['users.name','users.email','users.phone_no','users.image','users.address','users.qualifications','book_nows.status','book_nows.id','book_nows.created_at','book_nows.updated_at']).where('book_nows.id',input.book_id).limit(1).from('book_nows').join('users','users.id=book_nows.cus_id').get();
 		
 		return res.json(halper.api_response(1,'booking request',{upcoming:upcoming,completed:completed}));
 	} catch (err) {
@@ -234,8 +229,7 @@ async function customer_reqest(req, res, next){    // for broker app api
 		let date_format_plus_five = dateFormat(now_plus_five, 'yyyy-mm-dd H:MM:ss');
 
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
-		qb.query("UPDATE `book_nows` SET `status`='expired'  WHERE `assign_at` <= '" + date_format + "' AND `status` = 'pending'");
-
+		qb.query("UPDATE `book_nows` SET `status`='expired'  WHERE `assign_at` <= '" + date_format_plus_five + "' AND `status` = 'pending'");
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
 		let user_id = '-'+user.id+'-';
 		let upcoming = {};
@@ -243,6 +237,7 @@ async function customer_reqest(req, res, next){    // for broker app api
 		if(users[0].status == '1'){
 			let up_query =
         "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE (`book_nows`.`status` = 'pending' AND `book_nows`.`assign_at` BETWEEN '" + date_format_newDateObj + "' AND '" + curr_dateFormat + "' OR (`book_nows`.`status` = 'in_progress' OR `book_nows`.`status` = 'accepted' OR `book_nows`.`status` = 'travel_to_booking' AND `book_nows`.`broker_id` = '" + user.id + "')) AND`book_nows`.`for_broker` LIKE '%" + user_id + "%' ORDER BY `book_nows`.`id` DESC";
+			console.log(up_query);
 			upcoming = await qb.query(up_query);
 		}else{
 			let up_query =
@@ -253,7 +248,6 @@ async function customer_reqest(req, res, next){    // for broker app api
         "' ORDER BY `book_nows`.`id` DESC";
 			upcoming = await qb.query(up_query);
 		}
-
 
 		if (req.headers.time_zone) {
       upcoming = upcoming.map(function (response) {
@@ -274,8 +268,6 @@ async function customer_reqest(req, res, next){    // for broker app api
       user.id +
       ') ORDER BY `book_nows`.`id` DESC';
 
-			console.log(completed_query);
-		
 		completed = await qb.query(completed_query);
 		if (req.headers.time_zone) {
       completed = completed.map(function (response) {
@@ -287,7 +279,6 @@ async function customer_reqest(req, res, next){    // for broker app api
       });
     }
 
-		
 		return res.json(halper.api_response(1,'Customer request',{upcoming:upcoming,completed:completed}));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
@@ -314,8 +305,8 @@ async function broker_reqest(req, res, next){         // for customer app api
 		let my_query =
       "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '" + user.id + "' ORDER BY book_nows.id DESC";
 		upcoming = await qb.query(my_query);
-		console.log(`curr_dateFormat ${now}`);
-		console.log(`date_format_newDateObj ${now_plus_five}`);
+		// console.log(`curr_dateFormat ${now}`);
+		// console.log(`date_format_newDateObj ${now_plus_five}`);
 	
 		for (let i = 0; i < upcoming.length; i++) {
       if (

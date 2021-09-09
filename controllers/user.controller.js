@@ -229,7 +229,7 @@ async function customer_reqest(req, res, next){    // for broker app api
 		let date_format_plus_five = dateFormat(now_plus_five, 'yyyy-mm-dd H:MM:ss');
 
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
-		qb.query("UPDATE `book_nows` SET `status`='expired'  WHERE `assign_at` <= '" + date_format_plus_five + "' AND `status` = 'pending'");
+		// qb.query("UPDATE `book_nows` SET `status`='expired'  WHERE `assign_at` <= '" + date_format_plus_five + "' AND `status` = 'pending'");
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
 		let user_id = '-'+user.id+'-';
 		let upcoming = {};

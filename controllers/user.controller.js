@@ -305,24 +305,14 @@ async function broker_reqest(req, res, next){         // for customer app api
 		now_plus_five.setTime(now.getTime() + 5 * 60 * 1000);
 		let curr_dateFormat = dateFormat(now, 'yyyy-mm-dd H:MM:ss');
     let date_format_newDateObj = dateFormat(now_plus_five, 'yyyy-mm-dd H:MM:ss');
-		// console.log('curr_dateFormat = '+curr_dateFormat);
-		// console.log('date_format_newDateObj = ' + date_format_newDateObj);
-		
 
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let upcoming = {};
 		let completed = {};
 
 		let up_query =
-      "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '" +
-      user.id +
-      "' AND (book_nows.status = 'pending' AND book_nows.assign_at BETWEEN '" +
-      curr_dateFormat +
-      "' AND '" +
-      date_format_newDateObj +
-      "' OR book_nows.status IN ('in_progress','accepted','travel_to_booking')) ORDER BY book_nows.id DESC";
-
-		// console.log(up_query);
+      "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '" + user.id + "' AND (book_nows.status = 'pending' AND book_nows.assign_at BETWEEN '" + curr_dateFormat + "' AND '" + date_format_newDateObj + "' OR book_nows.status IN ('in_progress','accepted','travel_to_booking')) ORDER BY book_nows.id DESC";
+		console.log(up_query);
 		upcoming = await qb.query(up_query);
 		if (req.headers.time_zone) {
       upcoming = upcoming.map(function (response) {
@@ -397,8 +387,18 @@ async function deleteData(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
 		let input = req.body;
-		const results = await qb.delete('users', {id: input.id});
-		return res.json(halper.api_response(1,input.action+' delete successfully',input));
+		if(input.action == 'customer'){
+			const results = await qb.delete('users', {id: input.id});
+			return res.json(halper.api_response(1,input.action+' delete successfully',input));
+		}else{
+			let verify_status = '1';
+			let users = await qb.select('verify_status').where('id', input.id).limit(1).get('users');
+			if(users[0].verify_status == '1'){
+				verify_status = '2';
+			}
+			qb.update('users', {verify_status:verify_status}, {id: input.id});
+			return res.json(halper.api_response(1,'customer status change successfully',input));
+		}
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {

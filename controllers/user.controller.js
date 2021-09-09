@@ -308,40 +308,46 @@ async function broker_reqest(req, res, next){         // for customer app api
 
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let upcoming = {};
-		let completed = {};
+		let upcoming_resut = [];
+		let completed_resut = [];
 
-		let up_query =
-      "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '" + user.id + "' AND (book_nows.status = 'pending' AND book_nows.assign_at BETWEEN '" + curr_dateFormat + "' AND '" + date_format_newDateObj + "' OR book_nows.status IN ('in_progress','accepted','travel_to_booking')) ORDER BY book_nows.id DESC";
-		console.log(up_query);
-		upcoming = await qb.query(up_query);
-		if (req.headers.time_zone) {
-      upcoming = upcoming.map(function (response) {
-        response.assign_at = convertTZ(
-          response.assign_at,
+		let my_query =
+      "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  WHERE book_nows.cus_id = '" + user.id + "' ORDER BY book_nows.id DESC";
+		upcoming = await qb.query(my_query);
+		// console.log(`curr_dateFormat ${now}`);
+		// console.log(`date_format_newDateObj ${now_plus_five}`);
+		for (let i = 0; i < upcoming.length; i++) {
+      if (
+        (upcoming[i].status == 'pending' &&
+          upcoming[i].type == 'asap' &&
+          upcoming[i].assign_at.getTime() >= now.getTime() &&
+          upcoming[i].assign_at.getTime() <= now_plus_five.getTime()) ||
+        (upcoming[i].status == 'pending' &&
+          upcoming[i].type == 'later' &&
+          upcoming[i].assign_at.getTime() >= now.getTime()) ||
+        upcoming[i].status == 'in_progress' ||
+        upcoming[i].status == 'accepted' ||
+        upcoming[i].status == 'travel_to_booking'
+      ) {
+        upcoming[i].assign_at = convertTZ(
+          upcoming[i].assign_at,
           req.headers.time_zone,
         );
-        return response;
-      });
-    }
-		let complete_query =
-      "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`assign_at`, `book_nows`.`location`, `book_nows`.`latitude`, `book_nows`.`longitude`, `book_nows`.`created_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`broker_id` WHERE `book_nows`.`cus_id` = '" +
-      user.id +
-      "' AND (`book_nows`.`status` IN ('completed', 'rejected', 'cancelled') OR book_nows.assign_at >= '" +
-      date_format_newDateObj +
-      "') ORDER BY `book_nows`.`id` DESC";
-		completed = await qb.query(complete_query);
-		// console.log(qb.last_query());
-		if (req.headers.time_zone) {
-      completed = completed.map(function (response) {
-        response.assign_at = convertTZ(
-          response.assign_at,
+        upcoming_resut.push(upcoming[i]);
+      } else {
+        upcoming[i].assign_at = convertTZ(
+          upcoming[i].assign_at,
           req.headers.time_zone,
         );
-        return response;
-      });
+        completed_resut.push(upcoming[i]);
+      }
     }
-		
-		return res.json(halper.api_response(1,'Broker request',{upcoming:upcoming,completed:completed}));
+		return res.json(
+      halper.api_response(1, 'Broker request', {
+        upcoming: upcoming_resut,
+        completed: completed_resut,
+      }),
+    );
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {

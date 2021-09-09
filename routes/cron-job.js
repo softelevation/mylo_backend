@@ -43,17 +43,18 @@ var notification_s = async function (result) {
 router.get('/',async function(req,res){
     const qb = await dbs.get_connection();
     try {
-        var oldDateObj = new Date();
+        // var oldDateObj = new Date();
         var newDateObj = new Date();
-        newDateObj.setTime(oldDateObj.getTime() + 30 * 60 * 1000);
-        let date_format_oldDateObj = dateFormat(oldDateObj, 'yyyy-mm-dd H:MM:ss');
-        let date_format_newDateObj = dateFormat(newDateObj, 'yyyy-mm-dd H:MM:ss');
+        // newDateObj.setTime(oldDateObj.getTime() + 30 * 60 * 1000);
+        let date_format_oldDateObj = dateFormat(newDateObj, 'yyyy-mm-dd H:MM:00');
+        let date_format_newDateObj = dateFormat(newDateObj, 'yyyy-mm-dd H:MM:59');
         let up_query =
           "select book_nows.broker_id,book_nows.assign_at,users.token from book_nows inner join users on users.id = book_nows.broker_id where users.token != 'null' and book_nows.status = 'in_progress' and book_nows.assign_at between '" +
           date_format_oldDateObj +
           "' and '" +
           date_format_newDateObj +
           "'";
+        // console.log(up_query);
         let book_now = await qb.query(up_query);
         let result_id = book_now.map((a) => a.token);
         notification_s(result_id);

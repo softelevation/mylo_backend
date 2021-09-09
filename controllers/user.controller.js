@@ -232,33 +232,49 @@ async function customer_reqest(req, res, next){    // for broker app api
 		// qb.query("UPDATE `book_nows` SET `status`='expired'  WHERE `assign_at` <= '" + date_format_plus_five + "' AND `status` = 'pending'");
 		let users = await qb.select('status').where('id',user.id).limit(1).get('users');
 		let user_id = '-'+user.id+'-';
+		let upcoming_resut = [];
 		let upcoming = {};
 		let completed = {};
 		if(users[0].status == '1'){
 			let up_query =
-        "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE (`book_nows`.`status` = 'pending' AND `book_nows`.`assign_at` BETWEEN '" + date_format_newDateObj + "' AND '" + curr_dateFormat + "' OR (`book_nows`.`status` = 'in_progress' OR `book_nows`.`status` = 'accepted' OR `book_nows`.`status` = 'travel_to_booking' AND `book_nows`.`broker_id` = '" + user.id + "')) AND`book_nows`.`for_broker` LIKE '%" + user_id + "%' ORDER BY `book_nows`.`id` DESC";
-			console.log(up_query);
+        "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE (`book_nows`.`status` = 'pending' OR (`book_nows`.`status` = 'in_progress' OR `book_nows`.`status` = 'accepted' OR `book_nows`.`status` = 'travel_to_booking' AND `book_nows`.`broker_id` = '" + user.id + "')) AND`book_nows`.`for_broker` LIKE '%" + user_id + "%' ORDER BY `book_nows`.`id` DESC";
+			// console.log(up_query);
 			upcoming = await qb.query(up_query);
+			console.log(curr_dateFormat);
+			for (let i = 0; i < upcoming.length; i++) {
+				console.log(upcoming[i]);
+				if (
+          (upcoming[i].type == 'asap' &&
+            upcoming[i].assign_at.getTime() >= now_minus_five.getTime() &&
+            upcoming[i].assign_at.getTime() <= now.getTime()) ||
+          (upcoming[i].type == 'later' &&
+            upcoming[i].assign_at.getTime() >= now.getTime())
+        ) {
+          upcoming[i].assign_at = convertTZ(
+            upcoming[i].assign_at,
+            req.headers.time_zone,
+          );
+          upcoming_resut.push(upcoming[i]);
+        }
+			}
 		}else{
 			let up_query =
-        "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`,  `book_nows`.`location`,`book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` = 'in_progress' OR `book_nows`.`status` = 'travel_to_booking' OR `book_nows`.`status` = 'accepted' AND `book_nows`.`assign_at` >= '" +
-        curr_dateFormat +
-        "' AND `book_nows`.`broker_id` = '" +
+        "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`,  `book_nows`.`location`,`book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` = 'in_progress' OR `book_nows`.`status` = 'travel_to_booking' OR `book_nows`.`status` = 'accepted' AND `book_nows`.`broker_id` = '" +
         user.id +
         "' ORDER BY `book_nows`.`id` DESC";
 			upcoming = await qb.query(up_query);
-		}
-
-		if (req.headers.time_zone) {
-      upcoming = upcoming.map(function (response) {
-				response.created_at = convertTZ(
-          response.created_at,
-          req.headers.time_zone,
-        );
-        return response;
-      });
-    }
-		
+			if (req.headers.time_zone) {
+        upcoming_resut = upcoming.map(function (response) {
+          response.assign_at = convertTZ(
+            response.assign_at,
+            req.headers.time_zone,
+          );
+          return response;
+        });
+      }else{
+				upcoming_resut = upcoming;
+			}
+		}		
 		let completed_query =
       "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`, `book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` != 'in_progress' AND `book_nows`.`status` != 'travel_to_booking' AND `book_nows`.`status` != 'accepted' AND `book_nows`.`assign_at` <= '" +
       date_format_newDateObj +
@@ -271,15 +287,20 @@ async function customer_reqest(req, res, next){    // for broker app api
 		completed = await qb.query(completed_query);
 		if (req.headers.time_zone) {
       completed = completed.map(function (response) {
-        response.created_at = convertTZ(
-          response.created_at,
+        response.assign_at = convertTZ(
+          response.assign_at,
           req.headers.time_zone,
         );
         return response;
       });
     }
 
-		return res.json(halper.api_response(1,'Customer request',{upcoming:upcoming,completed:completed}));
+		return res.json(
+      halper.api_response(1, 'Customer request', {
+        upcoming: upcoming_resut,
+        completed: completed,
+      }),
+    );
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {

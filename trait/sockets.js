@@ -296,26 +296,27 @@ async function finish_mission(msg) {
 async function user_location(msg) {
 	try {
 		// console.log(msg);
+		// booking_id;
 		let now = new Date();
 		let now_date= dateFormat(now, 'yyyy-mm-dd H:MM:ss');
 		const user = await jwt.verify(msg.token, accessTokenSecret);
 		let obj = {
       user_id: user.id,
-      current_latitude: msg.current_latitude,
-      current_longitude: msg.current_longitude,
-      current_latitudeDelta: msg.current_latitudeDelta,
-      current_longitudeDelta: msg.current_longitudeDelta,
-      current_angle: msg.current_angle,
+      current_latitude: msg.latitude,
+      current_longitude: msg.longitude,
+      current_latitudeDelta: msg.latitudeDelta,
+      current_longitudeDelta: msg.longitudeDelta,
+      current_angle: msg.angle,
       created_at: now_date,
       updated_at: now_date,
     };
 		apiModel.updateOrCreate('user_trackings', obj, { user_id: user.id });
 		return {
-      current_latitude: msg.current_latitude,
-      current_longitude: msg.current_longitude,
-      current_latitudeDelta: msg.current_latitudeDelta,
-      current_longitudeDelta: msg.current_longitudeDelta,
-      current_angle: msg.current_angle
+      current_latitude: msg.latitude,
+      current_longitude: msg.longitude,
+      current_latitudeDelta: msg.latitudeDelta,
+      current_longitudeDelta: msg.longitudeDelta,
+      current_angle: msg.angle,
     };
   } catch (err) {
     return flase;

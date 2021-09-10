@@ -59,9 +59,9 @@ io.on('connection', (socket) => {
 
 
   socket.on('user_location', async (msg) => {
-      console.log(msg);
+      // console.log(msg);
       let uuuuuuuu = await sockets.user_location(msg);
-      io.emit(`user_location_${msg.booking_id}`, uuuuuuuu);
+      io.emit(`user_location_${msg.mission_id}`, uuuuuuuu);
   });
 });
 

@@ -829,7 +829,7 @@ async function testNotification(req, res, next){
 		var sockets = require('../trait/sockets');
 		// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
 		let uuuuuu = await sockets.travel_to_booking({
-      id: 164,
+      id: 10,
       token:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ2LCJpYXQiOjE2MzA1ODIyMzF9.7rnBChq7Fp92Go_lKh7zm-idl5vLVG6t0F7NZZKz1TU',
     });

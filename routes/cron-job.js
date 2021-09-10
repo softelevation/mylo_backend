@@ -43,9 +43,9 @@ var notification_s = async function (result) {
 router.get('/',async function(req,res){
     const qb = await dbs.get_connection();
     try {
-        // var oldDateObj = new Date();
+        var oldDateObj = new Date();
         var newDateObj = new Date();
-        // newDateObj.setTime(oldDateObj.getTime() + 30 * 60 * 1000);
+        newDateObj.setTime(oldDateObj.getTime() + 30 * 60 * 1000);
         let date_format_oldDateObj = dateFormat(newDateObj, 'yyyy-mm-dd H:MM:00');
         let date_format_newDateObj = dateFormat(newDateObj, 'yyyy-mm-dd H:MM:59');
         let up_query =

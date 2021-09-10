@@ -46,8 +46,8 @@ router.get('/',async function(req,res){
         var oldDateObj = new Date();
         var newDateObj = new Date();
         newDateObj.setTime(oldDateObj.getTime() + 30 * 60 * 1000);
-        let date_format_oldDateObj = dateFormat(newDateObj, 'yyyy-mm-dd H:MM:00');
-        let date_format_newDateObj = dateFormat(newDateObj, 'yyyy-mm-dd H:MM:59');
+        let date_format_oldDateObj = dateFormat(newDateObj, 'yyyy-mm-dd HH:MM:00');
+        let date_format_newDateObj = dateFormat(newDateObj, 'yyyy-mm-dd HH:MM:59');
         let up_query =
           "select book_nows.broker_id,book_nows.assign_at,users.token from book_nows inner join users on users.id = book_nows.broker_id where users.token != 'null' and book_nows.status = 'accepted' and book_nows.assign_at between '" +
           date_format_oldDateObj +

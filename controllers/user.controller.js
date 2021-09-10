@@ -237,21 +237,22 @@ async function customer_reqest(req, res, next){    // for broker app api
 		let completed = {};
 		if(users[0].status == '1'){
 			let up_query =
-        "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE (`book_nows`.`status` = 'pending' OR (`book_nows`.`status` = 'in_progress' OR `book_nows`.`status` = 'accepted' OR `book_nows`.`status` = 'travel_to_booking' AND `book_nows`.`broker_id` = '" + user.id + "')) AND`book_nows`.`for_broker` LIKE '%" + user_id + "%' ORDER BY `book_nows`.`id` DESC";
+        "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`status` = 'pending' OR (`book_nows`.`status` IN ('in_progress','accepted','travel_to_booking') AND `book_nows`.`broker_id` = '" + user.id + "') AND`book_nows`.`for_broker` LIKE '%" + user_id + "%' ORDER BY `book_nows`.`id` DESC";
 			// console.log(up_query);
 			upcoming = await qb.query(up_query);
-			// console.log(curr_dateFormat);
+			console.log(upcoming);
 			for (let i = 0; i < upcoming.length; i++) {
 				// console.log(upcoming[i]);
 				if (
-          (upcoming[i].type == 'asap' &&
-            upcoming[i].assign_at.getTime() >= now_minus_five.getTime() &&
-            upcoming[i].assign_at.getTime() <= now.getTime()) ||
-          (upcoming[i].type == 'later' &&
-            upcoming[i].assign_at.getTime() >= now.getTime()) ||
-          upcoming[i].type == 'accepted' ||
-          upcoming[i].type == 'travel_to_booking' ||
-          upcoming[i].type == 'in_progress'
+          (upcoming[i].status == 'pending' &&
+            ((upcoming[i].type == 'asap' &&
+              upcoming[i].assign_at.getTime() >= now_minus_five.getTime() &&
+              upcoming[i].assign_at.getTime() <= now.getTime()) ||
+              (upcoming[i].type == 'later' &&
+                upcoming[i].assign_at.getTime() >= now.getTime()))) ||
+          upcoming[i].status == 'accepted' ||
+          upcoming[i].status == 'travel_to_booking' ||
+          upcoming[i].status == 'in_progress'
         ) {
           upcoming[i].assign_at = convertTZ(
             upcoming[i].assign_at,

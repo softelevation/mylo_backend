@@ -188,41 +188,107 @@ async function add_status(object1) {
 }
 
 async function travel_to_booking(msg) {
+	const qb = await dbs.get_connection();
 	try {
+		let now = new Date();
 		const user = await jwt.verify(msg.token, accessTokenSecret);
 		apiModel.update('book_nows', { id: msg.id }, { status: 'travel_to_booking' });
-		let cus_id = await apiModel.select('book_nows', ['cus_id'], { id: msg.id });
-		return cus_id[0];
+		let cus_id = await qb.select(['book_nows.cus_id','users.token']).join('users','users.id=book_nows.cus_id').where('book_nows.id',msg.id).limit(1).get('book_nows');
+		let message_s = `Request #${msg.id} is travel for booking`;
+		if (cus_id[0].token) {
+      push_notification_s(cus_id[0].token, message_s);
+    }
+		qb.insert('notifications', {
+      booking_id: msg.id,
+      cus_id: cus_id[0].cus_id,
+      broker_id: user.id,
+      message: message_s,
+      cus_badge: 1,
+      brok_badge: 0,
+      notification_for: 1,
+      status: 'in_progress',
+      created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+      updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+    });
+		return cus_id[0].cus_id;
   } catch (err) {
     return flase;
   } finally {
+		qb.disconnect();
   }
 }
 
 async function arrived_on_destination(msg) {
-  try {		
+	const qb = await dbs.get_connection();
+  try {
+		let now = new Date();
     const user = await jwt.verify(msg.token, accessTokenSecret);
     apiModel.update('book_nows', { id: msg.id }, { status: 'in_progress' });
-		let cus_id = await apiModel.select('book_nows', ['cus_id'], { id: msg.id });
-		return cus_id[0];
+		let cus_id = await qb
+      .select(['book_nows.cus_id', 'users.token'])
+      .join('users', 'users.id=book_nows.cus_id')
+      .where('book_nows.id', msg.id)
+      .limit(1)
+      .get('book_nows');
+    let message_s = `Request #${msg.id} is arrived on destination`;
+    if (cus_id[0].token) {
+      push_notification_s(cus_id[0].token, message_s);
+    }
+    qb.insert('notifications', {
+      booking_id: msg.id,
+      cus_id: cus_id[0].cus_id,
+      broker_id: user.id,
+      message: message_s,
+      cus_badge: 1,
+      brok_badge: 0,
+      notification_for: 1,
+      status: 'in_progress',
+      created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+      updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+    });
+    return cus_id[0].cus_id;
   } catch (err) {
     return flase;
   } finally {
+		qb.disconnect();
   }
 }
 
 
 async function finish_mission(msg) {
+	const qb = await dbs.get_connection();
   try {
-    const user = await jwt.verify(msg.token, accessTokenSecret);
 		let now = new Date();
+    const user = await jwt.verify(msg.token, accessTokenSecret);
     apiModel.update('book_nows', { id: msg.id }, { status: 'completed', finished_at: dateFormat(now,'yyyy-mm-dd H:MM:ss') });
-		let cus_id = await apiModel.select('book_nows', ['cus_id'], { id: msg.id });
-		return cus_id[0];
+		let cus_id = await qb
+      .select(['book_nows.cus_id', 'users.token'])
+      .join('users', 'users.id=book_nows.cus_id')
+      .where('book_nows.id', msg.id)
+      .limit(1)
+      .get('book_nows');
+    let message_s = `Request #${msg.id} is complete`;
+    if (cus_id[0].token) {
+      push_notification_s(cus_id[0].token, message_s);
+    }
+    qb.insert('notifications', {
+      booking_id: msg.id,
+      cus_id: cus_id[0].cus_id,
+      broker_id: user.id,
+      message: message_s,
+      cus_badge: 1,
+      brok_badge: 0,
+      notification_for: 1,
+      status: 'in_progress',
+      created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+      updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
+    });
+    return cus_id[0].cus_id;
   } catch (err) {
 		console.log(err);
     return flase;
   } finally {
+		qb.disconnect();
   }
 }
 
@@ -414,6 +480,31 @@ var notification_change_request = async function (msg,statu_s) {
   }
 }
 
+var push_notification_s = async function (token,message_body) {
+  try {
+    var FCM = require('fcm-node');
+    let serverKey = process.env.cus_key;
+    var fcm = new FCM(serverKey);
+    var message = {
+      to: token,
+      notification: {
+        title: 'Mission',
+        body: message_body,
+      },
+      data: {
+        my_key: 'my value',
+        my_another_key: 'my another value',
+      },
+    };
+    fcm.send(message, function (err, response) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(response);
+      }
+    });
+  } catch (err) {}
+};
 
 var notification_s = async function (msg,result,callback) {
 	const qb = await dbs.get_connection();

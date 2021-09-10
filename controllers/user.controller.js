@@ -248,7 +248,10 @@ async function customer_reqest(req, res, next){    // for broker app api
             upcoming[i].assign_at.getTime() >= now_minus_five.getTime() &&
             upcoming[i].assign_at.getTime() <= now.getTime()) ||
           (upcoming[i].type == 'later' &&
-            upcoming[i].assign_at.getTime() >= now.getTime())
+            upcoming[i].assign_at.getTime() >= now.getTime()) ||
+          upcoming[i].type == 'accepted' ||
+          upcoming[i].type == 'travel_to_booking' ||
+          upcoming[i].type == 'in_progress'
         ) {
           upcoming[i].assign_at = convertTZ(
             upcoming[i].assign_at,
@@ -387,6 +390,7 @@ async function postUsersUpdate(req, res, next){
 	try {
 		upload(req, res, function(err) {
 			let inputData = req.body;
+			console.log(inputData);
 			if (err) {
 				 return res.json("Something went wrong!");
 			 }

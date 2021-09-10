@@ -328,7 +328,7 @@ async function broker_reqest(req, res, next){         // for customer app api
 		let completed_resut = [];
 
 		let my_query =
-      "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,user_trackings.current_latitude,user_trackings.current_longitude,user_trackings.current_latitudeDelta,user_trackings.current_longitudeDelta,user_trackings.current_angle,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  LEFT JOIN `user_trackings` ON user_trackings.user_id = users.id WHERE book_nows.cus_id = '" +
+      "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,user_trackings.current_latitude,user_trackings.current_longitude,user_trackings.current_latitudeDelta,user_trackings.current_longitudeDelta,user_trackings.current_angle,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  LEFT JOIN `user_trackings` ON user_trackings.user_id = users.id WHERE book_nows.cus_id = '" +
       user.id +
       "' ORDER BY book_nows.id DESC";
 		upcoming = await qb.query(my_query);

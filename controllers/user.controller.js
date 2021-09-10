@@ -240,9 +240,9 @@ async function customer_reqest(req, res, next){    // for broker app api
         "SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE (`book_nows`.`status` = 'pending' OR (`book_nows`.`status` = 'in_progress' OR `book_nows`.`status` = 'accepted' OR `book_nows`.`status` = 'travel_to_booking' AND `book_nows`.`broker_id` = '" + user.id + "')) AND`book_nows`.`for_broker` LIKE '%" + user_id + "%' ORDER BY `book_nows`.`id` DESC";
 			// console.log(up_query);
 			upcoming = await qb.query(up_query);
-			console.log(curr_dateFormat);
+			// console.log(curr_dateFormat);
 			for (let i = 0; i < upcoming.length; i++) {
-				console.log(upcoming[i]);
+				// console.log(upcoming[i]);
 				if (
           (upcoming[i].type == 'asap' &&
             upcoming[i].assign_at.getTime() >= now_minus_five.getTime() &&
@@ -280,10 +280,10 @@ async function customer_reqest(req, res, next){    // for broker app api
       date_format_newDateObj +
       "' AND `book_nows`.`for_broker` LIKE '%" +
       user_id +
-      "%' OR (`book_nows`.`status` = 'cancelled' AND `book_nows`.`broker_id` = " +
+      "%' OR ((`book_nows`.`status` = 'cancelled' OR `book_nows`.`status` = 'completed') AND `book_nows`.`broker_id` = " +
       user.id +
       ') ORDER BY `book_nows`.`id` DESC';
-
+		// console.log(completed_query);
 		completed = await qb.query(completed_query);
 		if (req.headers.time_zone) {
       completed = completed.map(function (response) {

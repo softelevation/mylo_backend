@@ -392,17 +392,28 @@ async function brokerProfile(req, res, next){
 async function postUsers(req, res, next){
 	const qb = await dbs.get_connection();
 	try {
-		upload(req, res, function(err) {
+		upload(req, res, async function(err) {
+			let message = '';
 			let inputData = req.body;
-			if (err) {
-				 return res.json("Something went wrong!");
-			 }
-			if(req.file){
-				inputData.image = 'images/'+req.file.filename;
+			let users = await qb.select(['email','phone_no']).where('email',inputData.email).or_where('phone_no',inputData.phone_no).limit(1).get('users');
+			if(users.length > 0){
+				if(users[0].email == inputData.email){
+					message = 'This email already exist';
+				}else if(users[0].phone_no == inputData.phone_no){
+					message = 'This phone_no already exist';
+				}
+				return res.status(200).json(halper.api_response(0,message,users));
+			}else{
+				if (err) {
+					 return res.json("Something went wrong!");
+				 }
+				if(req.file){
+					inputData.image = 'images/'+req.file.filename;
+				}
+				const insert_id = await qb.returning('id').insert('users', inputData);
+				inputData.id = insert_id.insertId;
+				return res.status(200).json(halper.api_response(1,'user add successfully',inputData));
 			}
-			qb.insert('users', inputData);
-			// inputData.id = insert_id.insertId;
-			return res.status(200).json(halper.api_response(1,'user add successfully',inputData));
 		});
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
@@ -413,23 +424,36 @@ async function postUsers(req, res, next){
 }
 
 async function postUsersUpdate(req, res, next){
+	const qb = await dbs.get_connection();
 	try {
-		upload(req, res, function(err) {
+		upload(req, res,async function(err) {
+			let message = '';
 			let inputData = req.body;
 			console.log(req.params.id);
 			console.log(inputData.phone_no);
-			if (err) {
-				 return res.json("Something went wrong!");
-			 }
-			if(req.file){
-				inputData.image = 'images/'+req.file.filename;
+			let users = await qb.select(['email','phone_no']).where('id !=',req.params.id).where('email',inputData.email).or_where('phone_no',inputData.phone_no).limit(1).get('users');
+			if(users.length > 0){
+				if(users[0].email == inputData.email){
+					message = 'This email is assign to another user';
+				}else if(users[0].phone_no == inputData.phone_no){
+					message = 'This phone_no is assign to another user';
+				}
+				return res.status(200).json(halper.api_response(0,message,users));
+			}else{
+				if (err) {
+					 return res.json("Something went wrong!");
+				 }
+				if(req.file){
+					inputData.image = 'images/'+req.file.filename;
+				}
+				qb.update('users', inputData, {id:req.params.id});
+				return res.json(halper.api_response(1,'Profile update successfully',inputData));
 			}
-			apiModel.save_api_name('postUsersUpdate');
-			apiModel.update('users', {id:req.params.id}, inputData);
-			return res.json(halper.api_response(1,'Profile update successfully',inputData));
 		});
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		qb.disconnect();
 	}
 }
 

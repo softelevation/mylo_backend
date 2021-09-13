@@ -389,6 +389,29 @@ async function brokerProfile(req, res, next){
 	}
 }
 
+async function postUsers(req, res, next){
+	const qb = await dbs.get_connection();
+	try {
+		upload(req, res, function(err) {
+			let inputData = req.body;
+			if (err) {
+				 return res.json("Something went wrong!");
+			 }
+			if(req.file){
+				inputData.image = 'images/'+req.file.filename;
+			}
+			const insert_id = await qb.returning('id').insert('users', inputData);
+			inputData.id = insert_id.insertId;
+			return res.status(200).json(halper.api_response(1,'user add successfully',inputData));
+		});
+	} catch (err) {
+		return res.json(halper.api_response(0,'This is invalid request',{}));
+	} finally {
+		apiModel.save_api_name('postUsers');
+		qb.disconnect();
+	}
+}
+
 async function postUsersUpdate(req, res, next){
 	try {
 		upload(req, res, function(err) {
@@ -689,22 +712,6 @@ function loginUser(req, res, next){
 			}
 		}
 	});
-}
-
-async function postUsers(req, res, next){
-	const qb = await dbs.get_connection();
-	try {
-		let inputData = req.body;
-		const insert_id = await qb.returning('id').insert('users', inputData);
-		inputData.id = insert_id.insertId;
-		
-		res.status(200).json(halper.api_response(1,'user add successfully',inputData));
-	} catch (err) {
-		return res.json(halper.api_response(0,'This is invalid request',{}));
-	} finally {
-		apiModel.save_api_name('postUsers');
-		qb.disconnect();
-	}
 }
 
 

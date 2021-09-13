@@ -393,7 +393,8 @@ async function postUsersUpdate(req, res, next){
 	try {
 		upload(req, res, function(err) {
 			let inputData = req.body;
-			console.log(inputData);
+			console.log(req.params.id);
+			console.log(inputData.phone_no);
 			if (err) {
 				 return res.json("Something went wrong!");
 			 }

@@ -429,9 +429,13 @@ async function postUsersUpdate(req, res, next){
 		upload(req, res,async function(err) {
 			let message = '';
 			let inputData = req.body;
-			console.log(req.params.id);
-			console.log(inputData.phone_no);
-			let users = await qb.select(['email','phone_no']).where('id !=',req.params.id).where('email',inputData.email).or_where('phone_no',inputData.phone_no).limit(1).get('users');
+			// console.log(req.params.id);
+			// console.log(inputData.phone_no);
+			// let users = await qb.select(['email','phone_no']).where('id !=',req.params.id).where('email',inputData.email).or_where('phone_no',inputData.phone_no).limit(1).get('users');
+			let completed_query = "SELECT `email`,`phone_no` FROM `users` WHERE `id` != '"+req.params.id+"' AND (`email` = '"+inputData.email+"' OR `phone_no` = '"+inputData.phone_no+"') LIMIT 1";
+			// console.log(completed_query);
+			let users = await qb.query(completed_query);
+			// console.log(users);
 			if(users.length > 0){
 				if(users[0].email == inputData.email){
 					message = 'This email is assign to another user';

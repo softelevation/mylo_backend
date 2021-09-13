@@ -400,8 +400,8 @@ async function postUsers(req, res, next){
 			if(req.file){
 				inputData.image = 'images/'+req.file.filename;
 			}
-			const insert_id = await qb.returning('id').insert('users', inputData);
-			inputData.id = insert_id.insertId;
+			qb.insert('users', inputData);
+			// inputData.id = insert_id.insertId;
 			return res.status(200).json(halper.api_response(1,'user add successfully',inputData));
 		});
 	} catch (err) {

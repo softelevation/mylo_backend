@@ -5,7 +5,7 @@ var apiModel = require('../Model/model');
 var BrokerTrait = require('../trait/BrokerTrait');  //allBrokers
 const jwt = require('jsonwebtoken');
 const dateFormat = require("dateformat");
-var multer  = require('multer')
+var multer  = require('multer');
 
 const accessTokenSecret = 'youraccesstokensecret';
 var storage = multer.diskStorage({

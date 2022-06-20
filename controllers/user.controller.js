@@ -148,7 +148,7 @@ async function userNotification(req, res, next) {
       halper.api_response(1, 'my notification list', notification),
     );
   } catch (err) {
-    return res.json(halper.api_response(0, 'This is invalid request', {}));
+    return res.json(halper.api_response(0, 'This is invalid request', []));
   } finally {
 		apiModel.save_api_name('userNotification');
     qb.disconnect();
@@ -521,7 +521,7 @@ async function profile(req, res, next){
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let users = await qb.select(['id','name','email','phone_no','image','roll_id','status','address','qualifications','banks','about_me']).where({id: user.id}).limit(1).get('users');
-		return res.json(halper.api_response(1,'User profile',users[0]));
+		return res.json(halper.api_response(1,'User profile',users.find(Boolean)));
 	} catch (err) {
 		return res.json(halper.api_response(0,'This is invalid request',{}));
 	} finally {
@@ -691,7 +691,7 @@ async function registered(req, res, next){
 
 			let otp_message = `${otp} is your OTP for verification from Mylo Pro. Please do not share your OTP with anyone.`;
 			if (inputRequest.phone_no.indexOf('+') !== -1) {
-        halper.sand_sms(inputRequest.phone_no, otp_message);
+        // halper.sand_sms(inputRequest.phone_no, otp_message);
       }
 			if(response.length > 0){
 				apiModel.updateOrCreate('otps', {user_id:response[0].id,otp: otp}, {user_id:response[0].id});

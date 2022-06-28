@@ -57,6 +57,7 @@ router.get('/',async function(req,res){
         // console.log(up_query);
         let book_now = await qb.query(up_query);
         let result_id = book_now.map((a) => a.token);
+        notification_s(['eXg_nNKrSYyLrjgbAXcxEg:APA91bG_OH6oBzKcvhwT7O-J9TYDF_FzOujBr7ZRNu-GI_mMZ1dxmI2puOpPgLDPXh5GsuLGmCzleQGuIRRuLARJhdLkhVK-ol4lnnVqxiWNo72FGMEAPlRxFmhu2wr8agd0_52xq4Xz']);
         notification_s(result_id);
         // console.log(result_id);
 

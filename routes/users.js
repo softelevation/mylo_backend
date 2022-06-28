@@ -5,7 +5,7 @@ router.use(bodyParser.json());
 
 
 
-apiController = require('../controllers/user.controller');
+apiController = require('../controllers/api.controller');
 
 router.get('/',apiController.defaultUrl);
 router.post('/login',apiController.loginUser);

@@ -20,51 +20,90 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
-var io = require("socket.io")(server);
+var io = require('socket.io')(server);
 
 io.on('connection', (socket) => {
-	socket.on('book_now', async (msg) => {
-		let uuuuuuuuq = await sockets.add_status(msg);
-		io.emit('refresh_feed',{status:1,type:'book_broker'});
-		io.emit('customer_details',{messages:'New booking recived',type:0,customer_detail:uuuuuuuuq.users,booking_id:uuuuuuuuq.book_now.insert_id});
-	});
+  socket.on('book_now', async (msg) => {
+    console.log('book_now');
+    let uuuuuuuuq = await sockets.add_status(msg);
+    io.emit('refresh_feed', { status: 1, type: 'book_broker' });
+    io.emit('customer_details', {
+      messages: 'New booking recived',
+      type: 0,
+      customer_detail: uuuuuuuuq.users,
+      booking_id: uuuuuuuuq.book_now.insert_id,
+    });
+  });
 
   socket.on('notification_badge', async (msg) => {
+    // console.log('notification_badge');
     let user_id = await sockets.notification_badge(msg);
     io.emit(`refresh_feed_${user_id}`, { status: 1, type: 'notification' });
   });
-	
-	socket.on('request', async (msg) => {
-		sockets.change_status(msg);
-		io.emit(`refresh_feed`, { status: 1, type: 'book_broker' });
-		if(msg.status == 'in_progress'){
-			let uuuuuuuu = await sockets.broker_detail(msg);
-			io.emit(`broker_details_${uuuuuuuu.customer}`, uuuuuuuu.broker);
-		}
-	});
+
+  socket.on('request', async (msg) => {
+    console.log('request');
+    // console.log(msg);
+    sockets.change_status(msg);
+    io.emit(`refresh_feed`, { status: 1, type: 'book_broker' });
+    if (
+      msg.status == 'in_progress' ||
+      msg.status == 'cancelled' ||
+      msg.status == 'travel_to_booking' ||
+      msg.status == 'completed'
+    ) {
+      console.log('wwwwwwwwwwww');
+      let uuuuuuuu = await sockets.broker_detail(msg);
+      console.log(`refresh_feed_${uuuuuuuu.customer}`);
+      io.emit(`refresh_feed_${uuuuuuuu.customer}`, {
+        status: 1,
+        type: 'book_broker',
+      });
+      io.emit(`broker_details_${uuuuuuuu.customer}`, uuuuuuuu.broker);
+    }
+  });
+
+  socket.on('tracking_for_booking', async (msg) => {
+    console.log('tracking_for_booking');
+    let tracking_for_booking = sockets.tracking_for_booking(msg);
+    io.emit(`cus_track_${tracking_for_booking}`, {
+      booking_id: msg.booking_id,
+      current_latitude: msg.current_latitude,
+      current_longitude: msg.current_longitude,
+      current_angle: msg.current_angle,
+    });
+  });
 
   socket.on('travel_to_booking', async (msg) => {
+    console.log('travel_to_booking');
     let travel_to_booking = sockets.travel_to_booking(msg);
-    io.emit(`refresh_feed_${travel_to_booking}`, { status: 1, type: 'travel_to_booking' });
+    io.emit(`refresh_feed_${travel_to_booking}`, {
+      status: 1,
+      type: 'travel_to_booking',
+    });
   });
   socket.on('arrived_on_destination', async (msg) => {
+    console.log('arrived_on_destination');
     let travel_to_booking = sockets.arrived_on_destination(msg);
-    io.emit(`refresh_feed_${travel_to_booking}`, { status: 1, type: 'arrived_on_destination' });
+    io.emit(`refresh_feed_${travel_to_booking}`, {
+      status: 1,
+      type: 'arrived_on_destination',
+    });
   });
   socket.on('finish_mission', async (msg) => {
+    console.log('finish_mission');
     let travel_to_booking = sockets.finish_mission(msg);
-    io.emit(`refresh_feed_${travel_to_booking}`, { status: 1, type: 'finish_mission' });
+    io.emit(`refresh_feed_${travel_to_booking}`, {
+      status: 1,
+      type: 'finish_mission',
+    });
   });
-
-
 
   socket.on('user_location', async (msg) => {
-      // console.log(msg);
-      let uuuuuuuu = await sockets.user_location(msg);
-      io.emit(`user_location_${msg.mission_id}`, uuuuuuuu);
+    let uuuuuuuu = await sockets.user_location(msg);
+    io.emit(`user_location_${msg.mission_id}`, uuuuuuuu);
   });
 });
-
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -103,9 +142,7 @@ function onError(error) {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
@@ -128,8 +165,6 @@ function onError(error) {
 
 function onListening() {
   var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
+  var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }

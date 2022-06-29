@@ -59,13 +59,16 @@ io.on('connection', (socket) => {
         status: 1,
         type: 'book_broker',
       });
-      io.emit(`broker_details_${uuuuuuuu.customer}`, uuuuuuuu.broker);
+      if (msg.status === 'in_progress') {
+        io.emit(`broker_details_${uuuuuuuu.customer}`, uuuuuuuu.broker);
+      }
     }
   });
 
   socket.on('tracking_for_booking', async (msg) => {
-    console.log('tracking_for_booking');
-    let tracking_for_booking = sockets.tracking_for_booking(msg);
+    console.log('msg: ', msg);
+    let tracking_for_booking = await sockets.tracking_for_booking(msg);
+    console.log('tracking_for_booking: ', tracking_for_booking);
     io.emit(`cus_track_${tracking_for_booking}`, {
       booking_id: msg.booking_id,
       current_latitude: msg.current_latitude,

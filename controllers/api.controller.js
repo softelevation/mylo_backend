@@ -917,6 +917,24 @@ async function testNotification(req, res, next) {
 
 }
 
+module.exports.feedbackAdd = async (req, res, next) => {
+  const qb = await dbs.get_connection();
+  try {
+    const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+    let input = req.body;
+		input.created_at = dateFormat(new Date(), 'yyyy-mm-dd H:MM:ss');
+		qb.insert('feedbacks', input);
+    return res
+      .status(200)
+      .json(halper.api_response(1, 'Feedback submitted successfully', input));
+  } catch (err) {
+    return res.json(halper.api_response(0, 'This is invalid request', {}));
+  } finally {
+    // apiModel.save_api_name('brokerStatus');
+    qb.disconnect();
+  }
+};
+
 
 async function brokerStatus(req, res, next) {
 	const qb = await dbs.get_connection();

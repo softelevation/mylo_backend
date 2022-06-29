@@ -46,5 +46,7 @@ router.get('/cronjob',apiController.cronjob);
 router.get('/admin-booking',apiController.adminBooking);
 router.get('/test-notification',apiController.testNotification);
 
+router.post('/feedback', apiController.feedbackAdd);
+
 
 module.exports = router;

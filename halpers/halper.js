@@ -3,6 +3,28 @@ var algorithm = 'aes256';
 var key = 'password';
 
 class halper {
+  obj_multi_select(obj, keys = null, status = true) {
+    let return_obj = {};
+    if (this.check_array_length(keys)) {
+      for (let k = 0; k < keys.length; k++) {
+        if (status) {
+          if (this.check(obj[keys[k]])) {
+            return_obj[keys[k]] = obj[keys[k]];
+          }
+        } else {
+          if (this.check(obj[keys[k]])) {
+            return_obj[keys[k]] = obj[keys[k]];
+          } else {
+            return_obj[keys[k]] = '';
+          }
+        }
+      }
+    } else {
+      return_obj = obj;
+    }
+    return return_obj;
+  }
+
   get_role_id(input) {
     let role_id = {
       user: 1,

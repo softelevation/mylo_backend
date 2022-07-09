@@ -25,6 +25,7 @@ var io = require('socket.io')(server);
 io.on('connection', (socket) => {
   socket.on('book_now', async (msg) => {
     console.log('book_now');
+    console.log(msg);
     let uuuuuuuuq = await sockets.add_status(msg);
     io.emit('refresh_feed', { status: 1, type: 'book_broker' });
     io.emit('customer_details', {
@@ -43,7 +44,7 @@ io.on('connection', (socket) => {
 
   socket.on('request', async (msg) => {
     console.log('request');
-    // console.log(msg);
+    console.log(msg);
     sockets.change_status(msg);
     io.emit(`refresh_feed`, { status: 1, type: 'book_broker' });
     if (
@@ -52,14 +53,20 @@ io.on('connection', (socket) => {
       msg.status == 'travel_to_booking' ||
       msg.status == 'completed'
     ) {
-      console.log('wwwwwwwwwwww');
+      // console.log('wwwwwwwwwwww');
       let uuuuuuuu = await sockets.broker_detail(msg);
-      console.log(`refresh_feed_${uuuuuuuu.customer}`);
+      // console.log(`refresh_feed_${uuuuuuuu.customer}`);
       io.emit(`refresh_feed_${uuuuuuuu.customer}`, {
         status: 1,
         type: 'book_broker',
       });
+      io.emit(`refresh_feed_${uuuuuuuu.customer}`, {
+        status: 1,
+        type: 'notification',
+      });
       if (msg.status === 'in_progress') {
+        // console.log('ssssssssss');
+        // console.log(uuuuuuuu.broker);
         io.emit(`broker_details_${uuuuuuuu.customer}`, uuuuuuuu.broker);
       }
     }
@@ -118,6 +125,7 @@ server.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.
+ * 
  */
 
 function normalizePort(val) {

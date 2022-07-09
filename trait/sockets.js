@@ -17,6 +17,7 @@ module.exports = {
   arrived_on_destination: arrived_on_destination,
   tracking_for_booking: tracking_for_booking,
   finish_mission: finish_mission,
+  feedback_request: feedback_request,
   notification_working: notification_working,
 };
 
@@ -157,8 +158,9 @@ async function notification_badge(msg) {
 }
 
 var convertGMT = function (date_format, time_zone) {
-  let moment = require('moment-timezone').tz(date_format, time_zone);
-  return moment.utc().format('YYYY-MM-DD HH:mm:00');
+  return moment(date_format).tz(time_zone).format('YYYY-MM-DD HH:mm:00');
+  // let moment = require('moment-timezone').tz(date_format, time_zone);
+  // return moment.utc().format('');
 };
 
 async function add_status(object1) {
@@ -396,7 +398,7 @@ async function broker_detail(msg) {
 async function change_status(msg) {
   const qb = await dbs.get_connection();
   try {
-    console.log('change_status change_status');
+    // console.log('change_status change_status');
     const user = await jwt.verify(msg.token, accessTokenSecret);
     let user_detail = await qb
       .select(['id', 'name', 'roll_id'])
@@ -515,6 +517,10 @@ var remove_broker = async function (msg) {
   }
 };
 
+async function feedback_request(msg) {
+  notification_change_request(msg, 'feedback');
+}
+
 var notification_change_request = async function (msg, statu_s) {
   const qb = await dbs.get_connection();
   try {
@@ -547,15 +553,23 @@ var notification_change_request = async function (msg, statu_s) {
       title_message = 'Booking cancelled';
       message_s = username + ' has cancelled your request';
     } else if (statu_s == 'travel_to_booking') {
-      title_message = 'Travel booking';
-      message_s = username + ' has been travel for your booking';
+      title_message = 'Inprogress';
+      message_s = username + ' has started the booking';
     } else if (statu_s == 'completed') {
       title_message = 'Completed booking';
       message_s = 'Thanks for booking';
     } else if (statu_s == 'rejected') {
       title_message = 'Booking rejected';
       message_s = username + ' has rejected your request';
+    }else if (statu_s == 'feedback') {
+      title_message = 'feedback';
+      message_s = username + ' has give you feedback';
     }
+      if (msg.roll_id == '2' && statu_s === 'in_progress') {
+        statu_s = 'accepted';
+      } else if (msg.roll_id == '2' && statu_s === 'travel_to_booking') {
+        statu_s = 'in_progress';
+      }
     // console.log(message_s);
     if (msg.roll_id == '2') {
       qb.insert('notifications', {
@@ -574,11 +588,11 @@ var notification_change_request = async function (msg, statu_s) {
       qb.insert('notifications', {
         booking_id: msg.id,
         cus_id: msg.broker_id,
-        broker_id: users[0].id,
+        broker_id: `-${users[0].id}-`,
         message: message_s,
         cus_badge: 0,
         brok_badge: 1,
-        notification_for: 1,
+        notification_for: 2,
         status: statu_s,
         created_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),
         updated_at: dateFormat(now, 'yyyy-m-d H:MM:ss'),

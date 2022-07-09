@@ -7,6 +7,8 @@ const jwt = require('jsonwebtoken');
 const dateFormat = require("dateformat");
 const moment = require('moment-timezone');
 var multer = require('multer');
+const { check_array_length, check_obj } = require('../halpers/halper');
+const { feedback_request } = require('../trait/sockets');
 
 const accessTokenSecret = 'youraccesstokensecret';
 var storage = multer.diskStorage({
@@ -135,10 +137,11 @@ async function userNotification(req, res, next) {
         .where('brok_badge', '1')
         .where('notification_for', '2')
         .like('broker_id', user_id)
-        .or_where('broker_id', user.id)
+        // .or_where('broker_id', user.id)
         .from('notifications')
         .order_by('id', 'desc')
         .get();
+			console.log(my_notification);
 			let booking_details = [];
 			for (let mynotification of my_notification) {
 				booking_details = await qb.query("SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`created_at`,`book_nows`.`assign_at`,`book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE `book_nows`.`id` = '" + mynotification.booking_id + "'");
@@ -146,7 +149,7 @@ async function userNotification(req, res, next) {
 				notification.push(mynotification);
 			}
 		}
-		console.log(notification);
+		// console.log(notification);
 		let booking_details = [];
 		return res.json(
 			halper.api_response(1, 'my notification list', notification),
@@ -154,7 +157,7 @@ async function userNotification(req, res, next) {
 	} catch (err) {
 		return res.json(halper.api_response(0, 'This is invalid request', []));
 	} finally {
-		apiModel.save_api_name('userNotification');
+		// apiModel.save_api_name('userNotification');
 		qb.disconnect();
 	}
 }
@@ -350,9 +353,9 @@ async function broker_reqest(req, res, next) {         // for customer app api
 		let completed_resut = [];
 
 		let my_query =
-			"SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,user_trackings.current_latitude,user_trackings.current_longitude,user_trackings.current_latitudeDelta,user_trackings.current_longitudeDelta,user_trackings.current_angle,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  LEFT JOIN `user_trackings` ON user_trackings.user_id = users.id WHERE book_nows.cus_id = '" +
-			user.id +
-			"' ORDER BY book_nows.id DESC";
+      "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,users.rating,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.broker_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,user_trackings.current_latitude,user_trackings.current_longitude,user_trackings.current_latitudeDelta,user_trackings.current_longitudeDelta,user_trackings.current_angle,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  LEFT JOIN `user_trackings` ON user_trackings.user_id = users.id WHERE book_nows.cus_id = '" +
+      user.id +
+      "' ORDER BY book_nows.id DESC";
 		upcoming = await qb.query(my_query);
 		for (let i = 0; i < upcoming.length; i++) {
 			if (
@@ -378,6 +381,9 @@ async function broker_reqest(req, res, next) {         // for customer app api
 					req.headers.time_zone,
 				);
 				upcoming[i].status = (upcoming[i].status === 'pending') ? 'expired' : upcoming[i].status;
+				upcoming[i].is_feedback = 0;
+				upcoming[i].is_feedback = await qb.select('*').where('book_id', upcoming[i].id).limit(1).get('feedbacks');
+				upcoming[i].is_feedback = (check_array_length(upcoming[i].is_feedback) && upcoming[i].status === "completed") ? 1 : 0;
 				completed_resut.push(upcoming[i]);
 			}
 		}
@@ -549,21 +555,24 @@ async function profilePost(req, res, next) {
 	const qb = await dbs.get_connection();
 	try {
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
-		let users = await qb.select('phone_no').where({ id: user.id }).limit(1).get('users');
+		let users = await qb.select(['phone_no','image']).where({ id: user.id }).limit(1).get('users');
 		const rndInt = Math.floor(Math.random() * 999999999) + 1;
-		let inputRequest = {
-			name: req.body.name,
-			email: req.body.email,
-			address: req.body.address
-		}
-		if (req.body.image) {
-			let base64Data = req.body.image.replace(/^data:image\/png;base64,/, '');
-			base64Data = base64Data.replace(/^data:image\/jpeg;base64,/, '');
-			let agent_signature = 'images/user' + rndInt + '.png';
-			require("fs").writeFile("public/" + agent_signature, base64Data, 'base64', function (err) {
-			});
-			inputRequest.image = agent_signature;
-		}
+		let inputRequest = halper.obj_multi_select(req.body, ['name', 'email','address']);
+		inputRequest.image = users[0].image;
+		// console.log(user);
+		if (check_obj(req.body, 'image')) {
+      let base64Data = req.body.image.replace(/^data:image\/png;base64,/, '');
+      base64Data = base64Data.replace(/^data:image\/jpeg;base64,/, '');
+      let agent_signature = 'images/user' + rndInt + '.png';
+      require('fs').writeFile(
+        'public/' + agent_signature,
+        base64Data,
+        'base64',
+        function (err) {},
+      );
+      inputRequest.image = agent_signature;
+    }
+		// console.log(inputRequest);
 		qb.update('users', halper.empty_array(inputRequest), { id: user.id });
 		inputRequest.phone_no = users[0].phone_no;
 		return res.json(halper.api_response(1, 'Profile update successfully', inputRequest));
@@ -881,14 +890,26 @@ async function testNotification(req, res, next) {
 	// let date_format = dateFormat(now, 'yyyy-mm-d H:MM:ss');
 	// convertUTC(date_format, 'Asia/Kolkata');
 	// console.log(convertUTC(date_format, 'Asia/Kolkata'));
+	console.log(req.body.name);
 	let input = {}
-	var sockets = require('../trait/sockets');
-	input = await sockets.change_status({
-    id: 26,
-    status: 'travel_to_booking',
+	let sockets = require('../trait/sockets');
+	sockets.add_status({
     token:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjQsImlhdCI6MTY1NjMwOTM3Nn0.7BD_J8OZ8OoJNhSMqXowv4eWeMem84v5DY_89YNVc3Q',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjA0LCJpYXQiOjE2NTY1ODgyMjh9.fWMdGjZMYynKqUJdNuuqQpMcdIRxx2CBPdt-QBds0JU',
+    assign_at: '2022-07-01 11:30:32',
+    lat: -33.8650229,
+    lng: 151.2099088,
+    location: "12 O'Connell St, Sydney NSW 2000, Australia",
+    time_zone: 'Asia/Kolkata',
   });
+	// input = await sockets.add_status({
+	// 	token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjA0LCJpYXQiOjE2NTY1ODgyMjh9.fWMdGjZMYynKqUJdNuuqQpMcdIRxx2CBPdt-QBds0JU',
+	// 	assign_at: '2022-06-30 20:35:32',
+	// 	lat: -33.8650229,
+	// 	lng: 151.2099088,
+	// 	location: "12 O'Connell St, Sydney NSW 2000, Australia",
+	// 	time_zone: 'Asia/Kolkata'
+	// });
 	// const users = await qb.select('*').where('id',req.params.id).limit(1).from('users').get();
 	// let uuuuuu = await sockets.finish_mission({
 	// 	id: 10,
@@ -921,7 +942,16 @@ module.exports.feedbackAdd = async (req, res, next) => {
   const qb = await dbs.get_connection();
   try {
     const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
+		let my_user = await qb.select('name').where('id', user.id).from('users').get();
     let input = req.body;
+		feedback_request({
+      id: input.book_id,
+      status: 'feedback',
+      token: req.headers.authorization,
+      broker_id: user.id,
+      user_name: my_user[0].name,
+      roll_id: '1',
+    });
 		input.created_at = dateFormat(new Date(), 'yyyy-mm-dd H:MM:ss');
 		qb.insert('feedbacks', input);
     return res

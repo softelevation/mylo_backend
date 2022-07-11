@@ -188,7 +188,7 @@ async function add_status(object1) {
     };
 
     if (object1.assign_at) {
-      object_add.assign_at = convertUTCToTimezone(input.assign_at, object1.time_zone,'Australia/Sydney');
+      object_add.assign_at = convertUTCToTimezone(object1.assign_at, object1.time_zone,'Australia/Sydney');
       // convertGMT(object1.assign_at, object1.time_zone);
       object_add.type = 'later';
     } else {

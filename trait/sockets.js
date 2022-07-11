@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const accessTokenSecret = 'youraccesstokensecret';
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
-const { check, check_array_length } = require('../halpers/halper');
+const { check, check_array_length, convertUTCTime, convertUTCToTimezone } = require('../halpers/halper');
 
 module.exports = {
   add_status: add_status,
@@ -188,10 +188,11 @@ async function add_status(object1) {
     };
 
     if (object1.assign_at) {
-      object_add.assign_at = convertGMT(object1.assign_at, object1.time_zone);
+      object_add.assign_at = convertUTCToTimezone(input.assign_at, object1.time_zone,'Australia/Sydney');
+      // convertGMT(object1.assign_at, object1.time_zone);
       object_add.type = 'later';
     } else {
-      object_add.assign_at = moment(now).format('YYYY-MM-DD HH:mm:00');
+      object_add.assign_at = convertUTCTime();
     }
     if (object1.lat) {
       object_add.latitude = object1.lat;

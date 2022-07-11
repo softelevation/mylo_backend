@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const dateFormat = require("dateformat");
 const moment = require('moment-timezone');
 var multer = require('multer');
-const { check_array_length, check_obj } = require('../halpers/halper');
+const { check_array_length, check_obj, convertUTCToTimezone, convertUTCTime } = require('../halpers/halper');
 const { feedback_request } = require('../trait/sockets');
 
 const accessTokenSecret = 'youraccesstokensecret';
@@ -230,19 +230,12 @@ var convertTZ = function (date, tzString) {
 async function customer_reqest(req, res, next) {    // for broker app api
 	const qb = await dbs.get_connection();
 	try {
-		// let sockets = require('../trait/sockets');
-		// sockets.remove_broker({
-    //   id: 24,
-    //   status: 'cancelled',
-    //   token:
-    //     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjQsImlhdCI6MTY1NTg5OTAxN30.dZkLMVY1qqDehtVAco7WDh0QxKS_0cp0HvA31l9vJak',
-    //   broker_id: 64,
-    //   roll_id: '2',
-    //   user_name: 'Bharat Chhabra',
-    // });
-		let now = new Date();
-		let now_minus_five = new Date();
-		let now_plus_five = new Date();
+		let now = new Date().toLocaleString('en-US', { timeZone: 'Australia/Sydney' });
+		now = new Date(now);
+		let now_minus_five = new Date().toLocaleString('en-US', { timeZone: 'Australia/Sydney' });
+		now_minus_five = new Date(now_minus_five);
+		let now_plus_five = new Date().toLocaleString('en-US', { timeZone: 'Australia/Sydney' });
+		now_plus_five = new Date(now_plus_five);
 		let date_format = dateFormat(now, 'yyyy-mm-d 00:01:01');
 		now_minus_five.setTime(now.getTime() - 5 * 60 * 1000);
 		now_plus_five.setTime(now.getTime() + 5 * 60 * 1000);
@@ -259,7 +252,6 @@ async function customer_reqest(req, res, next) {    // for broker app api
 		if (users[0].status == '1') {
 			let up_query =
 				"SELECT `users`.`name`, `users`.`email`, `users`.`phone_no`, `users`.`image`, `users`.`address`, `users`.`qualifications`, `book_nows`.`status`, `book_nows`.`type`, `users`.`about_me`, `book_nows`.`id`, `book_nows`.`location`,`book_nows`.`latitude`,`book_nows`.`longitude`,`book_nows`.`assign_at`, `book_nows`.`updated_at` FROM `book_nows` JOIN `users` ON `users`.`id` = `book_nows`.`cus_id` WHERE (`book_nows`.`status` = 'pending' OR (`book_nows`.`status` IN ('in_progress','accepted','travel_to_booking') AND `book_nows`.`broker_id` = '" + user.id + "')) AND`book_nows`.`for_broker` LIKE '%" + user_id + "%' ORDER BY `book_nows`.`id` DESC";
-			// console.log(date_format_newDateObj);
 			upcoming = await qb.query(up_query);
 			for (let i = 0; i < upcoming.length; i++) {
 				if (
@@ -274,10 +266,7 @@ async function customer_reqest(req, res, next) {    // for broker app api
 					upcoming[i].status == 'in_progress'
 				) {
 					upcoming[i].status = (upcoming[i].status === 'travel_to_booking') ? 'in_progress' : upcoming[i].status;
-					upcoming[i].assign_at = convertTZ(
-						upcoming[i].assign_at,
-						req.headers.time_zone,
-					);
+					upcoming[i].assign_at = convertUTCToTimezone(upcoming[i].assign_at, 'Australia/Sydney',req.headers.time_zone);
 					upcoming_resut.push(upcoming[i]);
 				}
 			}
@@ -289,10 +278,7 @@ async function customer_reqest(req, res, next) {    // for broker app api
 			upcoming = await qb.query(up_query);
 			if (req.headers.time_zone) {
 				upcoming_resut = upcoming.map(function (response) {
-					response.assign_at = convertTZ(
-						response.assign_at,
-						req.headers.time_zone,
-					);
+					response.assign_at = convertUTCToTimezone(response.assign_at, 'Australia/Sydney',req.headers.time_zone);
 					return response;
 				});
 			} else {
@@ -305,15 +291,11 @@ async function customer_reqest(req, res, next) {    // for broker app api
 		completed_query += 	" AND `book_nows`.`for_broker` LIKE '%" + user_id + "%'";
 		completed_query += " OR ((`book_nows`.`status` = 'cancelled' OR `book_nows`.`status` = 'completed')";
 		completed_query += " AND `book_nows`.`broker_id` = " + user.id + ") OR `book_nows`.`id` IN ("+halper.array_to_str(halper.filter_by_id(broker_booking,'book_id'))+") ORDER BY `book_nows`.`id` DESC";
-		// console.log(completed_query);
 		let completed_booking = [];
 		completed = await qb.query(completed_query);
 		if (req.headers.time_zone) {
 			for (let comp of completed) {
-				comp.assign_at = convertTZ(
-					comp.assign_at,
-					req.headers.time_zone,
-				);
+				comp.assign_at = convertUTCToTimezone(comp.assign_at, 'Australia/Sydney',req.headers.time_zone);
 				comp.status = (comp.status === 'pending') ? 'expired' : comp.status;
 				comp.broker_bookings = await qb.select(['id','status']).where('book_id',comp.id).from('broker_bookings').limit(1).get();
 				if(halper.check_array_length(comp.broker_bookings)){
@@ -326,7 +308,6 @@ async function customer_reqest(req, res, next) {    // for broker app api
 			}
 			completed = completed_booking;
 		}
-
 		return res.json(
 			halper.api_response(1, 'Customer request', {
 				upcoming: upcoming_resut,
@@ -344,14 +325,15 @@ async function customer_reqest(req, res, next) {    // for broker app api
 async function broker_reqest(req, res, next) {         // for customer app api
 	const qb = await dbs.get_connection();
 	try {
-		let now = new Date();
-		let now_plus_five = new Date();
+		let now = new Date().toLocaleString('en-US', { timeZone: 'Australia/Sydney' });
+		now = new Date(now);
+		let now_plus_five = new Date().toLocaleString('en-US', { timeZone: 'Australia/Sydney' });
+		now_plus_five = new Date(now_plus_five);;
 		now_plus_five.setTime(now.getTime() - 5 * 60 * 1000);
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let upcoming = {};
 		let upcoming_resut = [];
 		let completed_resut = [];
-
 		let my_query =
       "SELECT users.name,users.email,users.phone_no,users.image,users.address,users.qualifications,users.about_me,users.rating,book_nows.status,book_nows.type,book_nows.id,book_nows.cus_id,book_nows.broker_id,book_nows.created_at,book_nows.assign_at,book_nows.location,book_nows.latitude,book_nows.longitude,user_trackings.current_latitude,user_trackings.current_longitude,user_trackings.current_latitudeDelta,user_trackings.current_longitudeDelta,user_trackings.current_angle,book_nows.updated_at FROM `book_nows` LEFT JOIN `users` ON users.id = book_nows.broker_id  LEFT JOIN `user_trackings` ON user_trackings.user_id = users.id WHERE book_nows.cus_id = '" +
       user.id +
@@ -370,16 +352,10 @@ async function broker_reqest(req, res, next) {         // for customer app api
 				upcoming[i].status == 'accepted' ||
 				upcoming[i].status == 'travel_to_booking'
 			) {
-				upcoming[i].assign_at = convertTZ(
-					upcoming[i].assign_at,
-					req.headers.time_zone,
-				);
+				upcoming[i].assign_at = convertUTCToTimezone(upcoming[i].assign_at, 'Australia/Sydney',req.headers.time_zone);
 				upcoming_resut.push(upcoming[i]);
 			} else {
-				upcoming[i].assign_at = convertTZ(
-					upcoming[i].assign_at,
-					req.headers.time_zone,
-				);
+				upcoming[i].assign_at = convertUTCToTimezone(upcoming[i].assign_at, 'Australia/Sydney',req.headers.time_zone);
 				upcoming[i].status = (upcoming[i].status === 'pending') ? 'expired' : upcoming[i].status;
 				upcoming[i].is_feedback = 0;
 				upcoming[i].is_feedback = await qb.select('*').where('book_id', upcoming[i].id).limit(1).get('feedbacks');
@@ -890,18 +866,22 @@ async function testNotification(req, res, next) {
 	// let date_format = dateFormat(now, 'yyyy-mm-d H:MM:ss');
 	// convertUTC(date_format, 'Asia/Kolkata');
 	// console.log(convertUTC(date_format, 'Asia/Kolkata'));
-	console.log(req.body.name);
-	let input = {}
-	let sockets = require('../trait/sockets');
-	sockets.add_status({
-    token:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjA0LCJpYXQiOjE2NTY1ODgyMjh9.fWMdGjZMYynKqUJdNuuqQpMcdIRxx2CBPdt-QBds0JU',
-    assign_at: '2022-07-01 11:30:32',
-    lat: -33.8650229,
-    lng: 151.2099088,
-    location: "12 O'Connell St, Sydney NSW 2000, Australia",
-    time_zone: 'Asia/Kolkata',
-  });
+	// console.log(req.body.name);
+	let input = {};
+	// input = {
+  //   token:
+  //     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjA0LCJpYXQiOjE2NTY1ODgyMjh9.fWMdGjZMYynKqUJdNuuqQpMcdIRxx2CBPdt-QBds0JU',
+  //   assign_at: '2022-07-11 03:30:07',
+  //   lat: -33.8650229,
+  //   lng: 151.2099088,
+  //   location: "12 O'Connell St, Sydney NSW 2000, Australia",
+  //   time_zone: 'Asia/Kolkata',
+  // };
+
+	// console.log(convertUTCToTimezone(input.assign_at, 'Asia/Kolkata','Australia/Sydney'));
+	// console.log(convertUTCTime());
+	// let sockets = require('../trait/sockets');
+	// sockets.add_status();
 	// input = await sockets.add_status({
 	// 	token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjA0LCJpYXQiOjE2NTY1ODgyMjh9.fWMdGjZMYynKqUJdNuuqQpMcdIRxx2CBPdt-QBds0JU',
 	// 	assign_at: '2022-06-30 20:35:32',

@@ -1,8 +1,19 @@
 var crypto = require('crypto');
 var algorithm = 'aes256';
 var key = 'password';
+const moment = require('moment-timezone');
 
 class halper {
+  convertUTCToTimezone(utcDt, time_timezone, set_timezone) {
+    const start = moment.tz(utcDt, time_timezone); // original timezone
+    return start.tz(set_timezone).format('YYYY-MM-DD HH:mm:00');
+    // return moment.utc(utcDt, time_timezone).tz(set_timezone).format('YYYY-MM-DD HH:mm:ss');
+  }
+
+  convertUTCTime(){
+    return moment.tz(moment(), 'Australia/Sydney').format('YYYY-MM-DD HH:mm:00');
+  }
+
   obj_multi_select(obj, keys = null, status = true) {
     let return_obj = {};
     if (this.check_array_length(keys)) {

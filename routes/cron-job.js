@@ -74,8 +74,10 @@ router.get('/',async function(req,res){
         // var oldDateObj = new Date();
         var now = new Date();
         var newDateObj = new Date(convertUTCTime());
-        newDateObj.setTime(newDateObj.getTime() + 30 * 60 * 1000);
+        // console.log(dateFormat(newDateObj, 'yyyy-mm-dd HH:MM:00'));
+        newDateObj.setTime(newDateObj.getTime() + 05 * 60 * 1000);
         let my_query_oldDateObj = dateFormat(newDateObj, 'yyyy-mm-dd HH:MM:00');
+        // console.log(my_query_oldDateObj);
         // let date_format_oldDateObj = dateFormat(newDateObj, 'yyyy-mm-dd HH:MM:00');
         // let date_format_newDateObj = dateFormat(newDateObj, 'yyyy-mm-dd HH:MM:59');
         // console.log(date_format_newDateObj);
@@ -115,7 +117,9 @@ router.get('/',async function(req,res){
         // console.log(user_token);
         // let result_id = book_now.map((a) => a.token);
         // notification_s(['eXg_nNKrSYyLrjgbAXcxEg:APA91bG_OH6oBzKcvhwT7O-J9TYDF_FzOujBr7ZRNu-GI_mMZ1dxmI2puOpPgLDPXh5GsuLGmCzleQGuIRRuLARJhdLkhVK-ol4lnnVqxiWNo72FGMEAPlRxFmhu2wr8agd0_52xq4Xz']);
-        notification_expire_req(filter_by_id(user_token, 'token'));
+        if (check_array_length(user_token)) {
+          notification_expire_req(filter_by_id(user_token, 'token'));
+        }
         // console.log(result_id);
         return res.json(my_query_data);
     } catch (err) {

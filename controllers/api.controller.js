@@ -328,7 +328,7 @@ async function broker_reqest(req, res, next) {         // for customer app api
 		let now = new Date().toLocaleString('en-US', { timeZone: 'Australia/Sydney' });
 		now = new Date(now);
 		let now_plus_five = new Date().toLocaleString('en-US', { timeZone: 'Australia/Sydney' });
-		now_plus_five = new Date(now_plus_five);;
+		now_plus_five = new Date(now_plus_five);
 		now_plus_five.setTime(now.getTime() - 5 * 60 * 1000);
 		const user = await jwt.verify(req.headers.authorization, accessTokenSecret);
 		let upcoming = {};
